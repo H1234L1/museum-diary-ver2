@@ -1,0 +1,15 @@
+<view wx:if="{{visible}}" class="guide-shell guide-{{step.placement}}">
+  <view class="guide-avatar">馆</view>
+  <view class="guide-bubble">
+    <view class="guide-topline">
+      <view class="guide-name">博物馆向导</view>
+      <view class="guide-progress">{{stepNumber}} / {{stepCount}}</view>
+    </view>
+    <view class="guide-title">{{step.title}}</view>
+    <view class="guide-message">{{step.message}}</view>
+    <view class="guide-actions">
+      <button class="guide-skip" bindtap="skip">跳过</button>
+      <button class="guide-next" loading="{{moving}}" disabled="{{moving}}" bindtap="next">{{step.actionLabel}} <text>›</text></button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,44 @@
+<view class="nav-shell">
+  <navigator
+    wx:for="{{items}}"
+    wx:key="key"
+    class="nav-item {{active === item.key ? 'active' : ''}}"
+    url="{{item.url}}"
+    open-type="redirect"
+    hover-class="nav-hover"
+  >
+    <view class="nav-icon icon-{{item.key}}">
+      <block wx:if="{{item.key === 'home'}}">
+        <view class="museum-roof"></view>
+        <view class="museum-body">
+          <view class="column"></view><view class="column"></view><view class="column"></view><view class="column"></view>
+        </view>
+        <view class="museum-base"></view>
+      </block>
+      <block wx:elif="{{item.key === 'gallery'}}">
+        <view class="frame-corner corner-tl"></view>
+        <view class="frame-corner corner-tr"></view>
+        <view class="frame-corner corner-bl"></view>
+        <view class="frame-corner corner-br"></view>
+        <view class="frame-inner"><view class="frame-dot"></view></view>
+      </block>
+      <block wx:elif="{{item.key === 'record'}}">
+        <view class="record-sheet"></view>
+        <view class="record-pencil"></view>
+      </block>
+      <block wx:elif="{{item.key === 'summary'}}">
+        <view class="display-top"></view>
+        <view class="display-case">
+          <view class="display-mountain"></view>
+          <view class="display-sun"></view>
+        </view>
+        <view class="display-tag"></view>
+      </block>
+      <block wx:else>
+        <view class="profile-head"></view>
+        <view class="profile-body"></view>
+      </block>
+    </view>
+    <view class="nav-label">{{item.label}}</view>
+  </navigator>
+</view>
