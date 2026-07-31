@@ -1,0 +1,19 @@
+<view class="onboarding-page">
+  <image class="onboarding-art" src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
+  <view class="onboarding-shade"></view>
+
+  <view wx:if="{{ready}}" class="onboarding-content">
+    <view class="museum-seal">馆</view>
+    <view class="onboarding-title">欢迎来到人生博物馆</view>
+    <view class="onboarding-rule">— ◇ —</view>
+    <view class="onboarding-subtitle">每一个瞬间，都值得被收藏</view>
+    <button
+      class="onboarding-button"
+      loading="{{loggingIn}}"
+      disabled="{{loggingIn}}"
+      bindtap="startMuseum"
+    >
+      开启我的博物馆
+    </button>
+  </view>
+</view>

@@ -1,0 +1,33 @@
+<view class="home-page">
+  <view class="home-hero">
+    <image class="hero-art" src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
+    <view class="hero-shade"></view>
+    <view class="museum-title">
+      <view>人生博物馆</view>
+      <text>Life Museum</text>
+      <view class="title-rule">— ◆ —</view>
+    </view>
+  </view>
+
+  <view class="home-actions">
+    <navigator class="collect-card" url="/pages/record/record?new=1" open-type="redirect">
+      <view class="collect-title"><text class="plus">＋</text> 收藏一件展品</view>
+      <view class="collect-subtitle">记录每一段独特的人生故事</view>
+    </navigator>
+
+    <view class="stats-card">
+      <view class="stat">
+        <view class="stat-label">馆藏总数</view>
+        <view><text class="stat-number">{{exhibitCount}}</text><text class="stat-unit">件</text></view>
+      </view>
+      <view class="stat-line"></view>
+      <view class="stat">
+        <view class="stat-label">入馆天数</view>
+        <view><text class="stat-number">{{museumDays}}</text><text class="stat-unit">天</text></view>
+      </view>
+    </view>
+  </view>
+
+  <museum-guide></museum-guide>
+  <museum-nav active="home"></museum-nav>
+</view>

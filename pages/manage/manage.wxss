@@ -1,0 +1,16 @@
+.manage-page { min-height: 100vh; padding: 105rpx 42rpx 50rpx; box-sizing: border-box; background: linear-gradient(#f7f2ea,#e9ddce); }
+.manage-nav { display: flex; justify-content: space-between; font-size: 36rpx; }
+.manage-nav view:first-child, .manage-nav view:last-child { font-size: 50rpx; width: 60rpx; text-align: center; }
+.hint { margin: 35rpx 0 20rpx; text-align: center; color: #8c7a65; font-size: 24rpx; }
+.hall-list { overflow: hidden; border: 1rpx solid #d5c3aa; border-radius: 22rpx; background: rgba(255,252,247,.65); }
+.hall-row { height: 140rpx; display: flex; align-items: center; padding: 0 22rpx; border-bottom: 1rpx solid #d9cbb8; }
+.hall-row:last-child { border-bottom: 0; }
+.handle { color: #9d8970; font-size: 38rpx; }
+.hall-cover { width: 100rpx; height: 84rpx; margin: 0 24rpx; border-radius: 10rpx; background: linear-gradient(145deg,#c6b092,#735c40); }
+.cover-1 { background: linear-gradient(145deg,#96a7a1,#455d62); }
+.cover-2 { background: linear-gradient(145deg,#c59b6e,#51402f); }
+.cover-3 { background: linear-gradient(145deg,#b8ae91,#77755d); }
+.hall-copy { flex: 1; font-size: 30rpx; }
+.hall-copy text { display: block; margin-top: 8rpx; color: #897761; font-size: 23rpx; }
+.edit { color: #87632f; }
+.done { margin-top: 50rpx; color: #fff9ed; background: #8d6938; border-radius: 12rpx; }

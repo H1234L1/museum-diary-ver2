@@ -1,0 +1,24 @@
+<!--pages/site/site.wxml-->
+<view class="container">
+  <mcontent style="z-index: -1; position: fixed; top: 0" detail="https://t73-cloudfile.oss-cn-zhangjiakou.aliyuncs.com/super/mini/self/schoolintro/bgi.jpg" type="background-image" />
+
+  <mcontent detail="风雨操场" type="title" />
+
+  <mcontent style="width: 750rpx; height: 68rpx; display: block; box-sizing: border-box" type="divider" />
+
+  <mcontent style="width: 591rpx; height: 425rpx; display: block; box-sizing: border-box" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphPOPSMmROgfQ0roW_PeEdMZfTXRLz-l2h146FzMFbJvHXWFqAwL5QqFmjtQy2744wA" type="image" />
+
+
+  <mcontent style="width: 750rpx; height: 33rpx; display: block; box-sizing: border-box" type="divider" />
+
+  <mcontent type="block" detail="rgba(255, 255, 255, 0.8)" style="width: 591rpx; display: block; box-sizing: border-box; height: 752rpx">
+    <mcontent style="position: relative; left: 0rpx; top: 214rpx; width: 595rpx; display: block; box-sizing: border-box; height: 550rpx" detail="在我们学校里，有一个特别的地方，它就是我们的风雨操场。这个操场对我们每一个学生来说都非常重要，它不仅是我们运动和活动的场所，而且还承载着我们许多美好的回忆。风雨操场的名字很有意义，它象征着无论遇到怎样的困难和挑战，我们都要勇敢面对，就像在风雨中仍旧坚持运动一样。我们的风雨操场不仅是进行体育锻炼的场所，它还是我们社交的中心。放学后，许多同学会聚在这里，一起打篮球、跑步或者只是坐在看台上聊天。这里充满了活力和欢笑声，是我们放松和释放压力的好地方。" type="text" />
+  
+    <mcontent style="width: 274rpx; height: 170rpx; display: block; box-sizing: border-box; position: relative; left: 23rpx; top: -527rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphAAT_Z4F1r8z3kT0tc2QTmxaT6JDDUy2mh8nNV_6g_X-tFJrIWsbS-oC6XCOkWaHxg" type="image" />
+  
+    <mcontent style="width: 243rpx; height: 170rpx; display: block; box-sizing: border-box; position: relative; left: 324rpx; top: -697rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphPUx1OMkPIS55ZIuHBBsXWclZErN7wMoHrtbcdepwvSVbkVZYyx_d1ugj1awnWEuPg" type="image" />
+    </mcontent>
+
+  <mcontent detail="返回" type="button" link="/pages/list/list" />
+
+</view>

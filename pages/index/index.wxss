@@ -1,0 +1,111 @@
+.home-page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  box-sizing: border-box;
+  background: #d5c1a7;
+}
+.home-hero {
+  position: relative;
+  height: 64vh;
+  min-height: 720rpx;
+  overflow: hidden;
+}
+.hero-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(239,225,204,.12), rgba(71,48,23,.03) 62%, rgba(61,41,20,.22));
+  pointer-events: none;
+}
+.museum-title {
+  position: absolute;
+  top: calc(115rpx + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #29241e;
+  font-size: 48rpx;
+  letter-spacing: 8rpx;
+}
+.museum-title text {
+  display: block;
+  margin-top: 8rpx;
+  font-family: inherit;
+  font-size: 28rpx;
+  font-style: italic;
+  letter-spacing: 1rpx;
+}
+.title-rule {
+  margin-top: 10rpx;
+  color: #b59c77;
+  font-size: 18rpx;
+  letter-spacing: 5rpx;
+}
+.home-actions {
+  position: relative;
+  margin-top: -4rpx;
+  padding: 28rpx 72rpx 32rpx;
+  background: linear-gradient(#d5c1a7, #cdb699);
+}
+.collect-card {
+  padding: 28rpx 20rpx 25rpx;
+  text-align: center;
+  color: #342d25;
+  border: 2rpx solid rgba(255,255,255,.72);
+  border-radius: 18rpx;
+  background: rgba(249,242,232,.9);
+  box-shadow: 0 14rpx 28rpx rgba(59,39,18,.2);
+}
+.collect-title {
+  font-size: 38rpx;
+  letter-spacing: 4rpx;
+}
+.plus {
+  margin-right: 18rpx;
+  font-size: 47rpx;
+}
+.collect-subtitle {
+  margin-top: 9rpx;
+  color: #766757;
+  font-size: 24rpx;
+  letter-spacing: 2rpx;
+}
+.stats-card {
+  height: 142rpx;
+  margin-top: 28rpx;
+  padding: 0 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border: 4rpx double #9a6c2c;
+  border-radius: 10rpx;
+  background: linear-gradient(135deg,#dec6a0,#caaa79);
+  box-shadow: 0 10rpx 20rpx rgba(60,40,18,.2);
+}
+.stat {
+  flex: 1;
+  text-align: center;
+}
+.stat-label {
+  font-size: 25rpx;
+  letter-spacing: 3rpx;
+}
+.stat-number {
+  margin-right: 10rpx;
+  font-family: var(--font-numeral);
+  font-weight: 400;
+  font-size: 58rpx;
+  letter-spacing: 6rpx;
+}
+.stat-unit {
+  font-size: 23rpx;
+}
+.stat-line {
+  width: 1rpx;
+  height: 78rpx;
+  background: rgba(103,72,33,.35);
+}

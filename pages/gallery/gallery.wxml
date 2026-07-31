@@ -1,0 +1,112 @@
+<view class="gallery-page">
+  <view class="page-head">
+    <view class="page-title">展厅</view>
+    <view class="section-line">
+      <view class="section-title">我的展厅</view>
+    </view>
+  </view>
+
+  <navigator class="main-hall" url="{{mainHallUrl}}">
+    <image src="/assets/art/hall-main.jpg" mode="aspectFill"></image>
+    <view class="card-gradient"></view>
+    <view class="main-copy">
+      <view class="hall-name">主馆</view>
+      <view class="hall-meta">全部展品</view>
+      <view class="short-rule"></view>
+      <view class="hall-count">{{mainHallCount}} 件展品</view>
+    </view>
+    <view class="round-arrow">›</view>
+  </navigator>
+
+  <view class="section-line sub-heading">
+    <view class="section-title small">副馆</view>
+    <view wx:if="{{subHalls.length}}" class="hall-total">{{subHalls.length}} 个展馆</view>
+  </view>
+
+  <view class="subhall-grid">
+    <view
+      wx:for="{{subHalls}}"
+      wx:key="id"
+      class="created-hall-card"
+      data-index="{{index}}"
+      bindtap="openHall"
+    >
+      <image wx:if="{{item.displayCover}}" src="{{item.displayCover}}" mode="aspectFill"></image>
+      <view wx:else class="default-cover"><view class="cover-arch"></view></view>
+      <view class="created-overlay"></view>
+      <view class="created-copy">
+        <view class="created-name">{{item.name}}</view>
+        <view wx:if="{{item.description}}" class="created-description">{{item.description}}</view>
+        <text>{{item.count}} 件展品</text>
+      </view>
+      <view class="mini-arrow">›</view>
+    </view>
+
+    <view class="create-hall-card {{subHalls.length ? 'compact' : 'empty'}}" bindtap="openCreator">
+      <view class="create-plus">＋</view>
+      <view class="create-title">创建副馆</view>
+      <text wx:if="{{!subHalls.length}}">为一组特别的记忆，留出一间展厅</text>
+    </view>
+  </view>
+
+  <view class="gallery-bottom-space"></view>
+  <museum-guide></museum-guide>
+  <museum-nav active="gallery"></museum-nav>
+
+  <view wx:if="{{creatorVisible}}" class="creator-mask" bindtap="closeCreator">
+    <view class="creator-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="creator-heading">
+        <view>
+          <view class="creator-kicker">NEW GALLERY</view>
+          <view class="creator-title">创建一间副馆</view>
+        </view>
+        <view class="creator-close" bindtap="closeCreator">×</view>
+      </view>
+      <view class="creator-note">先为它取一个名字，之后可以慢慢把展品放进来。</view>
+
+      <view class="field-label">副馆名称 <text>必填</text></view>
+      <input
+        class="hall-input"
+        value="{{hallName}}"
+        maxlength="12"
+        placeholder="例如：夏日碎片"
+        bindinput="updateHallName"
+      />
+
+      <view class="field-label">一句简介 <text>选填</text></view>
+      <input
+        class="hall-input"
+        value="{{hallDescription}}"
+        maxlength="24"
+        placeholder="这间展厅收藏着什么？"
+        bindinput="updateHallDescription"
+      />
+
+      <view class="field-label cover-label">选择封面 <text>选填</text></view>
+      <scroll-view class="cover-list" scroll-x="{{true}}" show-scrollbar="{{false}}">
+        <view class="cover-row">
+          <view class="cover-choice default-choice {{!selectedCover ? 'selected' : ''}}" bindtap="chooseDefaultCover">
+            <view class="small-arch"></view><text>默认</text>
+          </view>
+          <view
+            wx:for="{{coverOptions}}"
+            wx:key="*this"
+            class="cover-choice {{selectedCover === item ? 'selected' : ''}}"
+            data-image="{{item}}"
+            bindtap="chooseCover"
+          >
+            <image src="{{item}}" mode="aspectFill"></image>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="creator-actions">
+        <button class="cancel-button" bindtap="closeCreator">取消</button>
+        <button class="create-button" loading="{{creating}}" bindtap="submitHall">创建副馆</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{toast}}" class="toast">{{toast}}</view>
+</view>

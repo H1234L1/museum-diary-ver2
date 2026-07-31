@@ -1,0 +1,67 @@
+<view class="report-page">
+  <view class="report-nav">
+    <view class="back" bindtap="goBack">‹</view>
+    <view>月度馆藏报告</view>
+    <button class="share-top" open-type="share">分享</button>
+  </view>
+
+  <view class="report-sheet">
+    <view class="report-meta">
+      <text>LIFE MUSEUM</text>
+      <text>{{monthText}}</text>
+    </view>
+    <view class="museum-mark">馆</view>
+    <view class="report-title">我在 {{monthName}} 收藏了</view>
+    <view class="report-number"><text>{{monthlyItemCount}}</text> 件展品</view>
+    <view class="ornament">——　◆　——</view>
+    <view class="report-slogan">每一个瞬间，都是生命的展品。</view>
+
+    <view class="moment-card" bindtap="editMoment">
+      <view class="moment-label">本月最珍贵的瞬间</view>
+      <image wx:if="{{monthlyHighlight && monthlyHighlight.kind === 'photo'}}" src="{{monthlyHighlight.image}}" mode="aspectFill"></image>
+      <view wx:elif="{{monthlyHighlight && monthlyHighlight.kind === 'sentence'}}" class="selected-sentence">“{{monthlyHighlight.text}}”</view>
+      <view wx:else class="moment-empty">
+        <view class="moment-empty-mark">＋</view>
+        <view>选择本月照片或一句日记</view>
+      </view>
+      <view wx:if="{{monthlyHighlight}}" class="moment-date">{{monthlyHighlight.date}}　轻触更换</view>
+    </view>
+
+    <view class="report-stats">
+      <view><text class="report-stat-label">语音时长</text><text class="report-stat-number">{{monthlyAudioMinutes}}</text><text>分钟</text></view>
+      <view><text class="report-stat-label">记录天数</text><text class="report-stat-number">{{monthlyStoryDays}}</text><text>天</text></view>
+      <view><text class="report-stat-label">记录字数</text><text class="report-stat-number">{{monthlyWordCount}}</text><text>字</text></view>
+    </view>
+    <view class="report-footer">
+      <view><text>人生博物馆</text><text class="english">Life Museum</text></view>
+      <view class="qr-demo">馆</view>
+    </view>
+  </view>
+
+  <view wx:if="{{selectorVisible}}" class="selector-mask" bindtap="closeSelector">
+    <view class="selector-sheet" catchtap="noop">
+      <view class="selector-head">
+        <view class="selector-title">{{selectionTitle}}</view>
+        <view class="selector-close" bindtap="closeSelector">×</view>
+      </view>
+      <scroll-view class="selector-list" scroll-y="{{true}}">
+        <view
+          wx:for="{{selectionOptions}}"
+          wx:key="id"
+          class="selector-option {{selectionMode === 'photo' ? 'photo-option' : 'sentence-option'}}"
+          data-index="{{index}}"
+          bindtap="chooseHighlight"
+        >
+          <image wx:if="{{selectionMode === 'photo'}}" src="{{item.image}}" mode="aspectFill"></image>
+          <view class="selector-copy">
+            <view wx:if="{{selectionMode === 'photo'}}">{{item.label}}</view>
+            <view wx:else class="selector-sentence">“{{item.text}}”</view>
+            <text>{{item.date}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <view wx:if="{{toast}}" class="toast">{{toast}}</view>
+</view>

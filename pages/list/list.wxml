@@ -1,0 +1,46 @@
+<!--pages/list/list.wxml-->
+<view class="container">
+  <mcontent style="z-index: -1; top: 0; position: fixed" detail="https://t73-cloudfile.oss-cn-zhangjiakou.aliyuncs.com/super/mini/self/schoolintro/bgi.jpg" type="background-image" />
+
+  <mcontent detail="青草学院" type="title" />
+  
+  <mcontent style="width: 750rpx; height: 66rpx; display: block; box-sizing: border-box" type="divider" />
+
+  <mcontent type="block" detail="rgba(255, 255, 255, 0.5)" style="width: 650rpx; height: 200rpx; display: block; box-sizing: border-box" link="/pages/content1/content1">
+    <mcontent style="width: 200rpx; height: 200rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphPOPSMmROgfQ0roW_PeEdMZfTXRLz-l2h146FzMFbJvHXWFqAwL5QqFmjtQy2744wA" type="image" />
+  
+    <mcontent style="width: 231rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -177rpx" detail="风雨操场" type="heading" />
+
+    <mcontent style="width: 177rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -170rpx" detail="点击前往" type="text" />
+    </mcontent>
+
+  <mcontent style="width: 750rpx; height: 66rpx; display: block; box-sizing: border-box" type="divider" />
+
+    <mcontent type="block" detail="rgba(255, 255, 255, 0.5)" style="width: 650rpx; height: 200rpx; display: block; box-sizing: border-box" link="/pages/content1/content1">
+    <mcontent style="width: 200rpx; height: 200rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphAAT_Z4F1r8z3kT0tc2QTmxaT6JDDUy2mh8nNV_6g_X-tFJrIWsbS-oC6XCOkWaHxg" type="image" />
+  
+    <mcontent detail="静谧书馆" style="width: 231rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -177rpx" type="heading" />
+
+    <mcontent style="width: 177rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -170rpx" detail="点击前往" type="text" />
+    </mcontent>
+
+    <mcontent style="width: 750rpx; height: 66rpx; display: block; box-sizing: border-box" type="divider" />
+
+    <mcontent type="block" detail="rgba(255, 255, 255, 0.5)" style="width: 650rpx; height: 200rpx; display: block; box-sizing: border-box" link="/pages/content1/content1">
+    <mcontent style="width: 200rpx; height: 200rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphPUx1OMkPIS55ZIuHBBsXWclZErN7wMoHrtbcdepwvSVbkVZYyx_d1ugj1awnWEuPg" type="image" />
+  
+    <mcontent style="width: 231rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -177rpx" detail="丰收教室" type="heading" />
+
+    <mcontent style="width: 177rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -170rpx" detail="点击前往" type="text" />
+    </mcontent>
+
+    <mcontent style="width: 750rpx; height: 66rpx; display: block; box-sizing: border-box" type="divider" />
+
+    <mcontent type="block" detail="rgba(255, 255, 255, 0.5)" style="width: 650rpx; height: 200rpx; display: block; box-sizing: border-box" link="/pages/content1/content1">
+    <mcontent style="width: 200rpx; height: 200rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx" detail="https://res.wx.qq.com/op_res/n39Llqc--Z5qRkHCY7yphJrAj_1MIgblDwdXdO4eq_dh3uqrLNA-AgSlOWFzo0KK4tUrl9ZnfAfOnE3o4XhnLg" type="image" />
+  
+    <mcontent style="width: 231rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -177rpx" detail="宏伟学堂" type="heading" />
+
+    <mcontent style="width: 177rpx; height: 70rpx; display: block; box-sizing: border-box; position: relative; left: 222rpx; top: -170rpx" detail="点击前往" type="text" />
+    </mcontent>
+</view>

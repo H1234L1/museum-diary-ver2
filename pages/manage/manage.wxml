@@ -1,0 +1,17 @@
+<view class="manage-page">
+  <view class="manage-nav">
+    <view bindtap="back">‹</view><view>管理展厅</view><view bindtap="addHall">＋</view>
+  </view>
+  <view class="hint">长按并拖动可调整展厅顺序</view>
+  <view class="hall-list">
+    <view wx:for="{{halls}}" wx:key="name" class="hall-row">
+      <view class="handle">≡</view>
+      <view class="hall-cover cover-{{index}}"></view>
+      <view class="hall-copy">
+        <view>{{item.name}}</view><text>{{item.count}} 件展品</text>
+      </view>
+      <view class="edit" data-index="{{index}}" bindtap="editHall">编辑</view>
+    </view>
+  </view>
+  <button class="done" bindtap="back">完成</button>
+</view>

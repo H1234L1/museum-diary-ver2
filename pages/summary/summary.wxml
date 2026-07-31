@@ -1,0 +1,56 @@
+<view class="summary-page">
+  <view class="page-title">月报预览</view>
+
+  <view class="report-sections">
+    <view class="report-panel current-panel">
+      <view class="panel-heading">
+        <view>
+          <view class="panel-kicker">CURRENT REPORT</view>
+          <view class="panel-title">此月月报</view>
+        </view>
+        <view class="month-mark">{{currentMonthNumber}}<text>月</text></view>
+      </view>
+
+      <view class="current-summary">
+        <view>{{currentMonthLabel}}</view>
+        <text>共入藏 {{currentItemCount}} 件展品</text>
+      </view>
+
+      <navigator class="view-report-button" url="/pages/report/report?month={{currentMonthKey}}">
+        <text>点击查看</text><text class="button-arrow">›</text>
+      </navigator>
+    </view>
+
+    <view class="report-panel history-panel">
+      <view class="panel-heading history-heading">
+        <view>
+          <view class="panel-kicker">REPORT ARCHIVE</view>
+          <view class="panel-title">所有过往月报</view>
+        </view>
+        <view class="archive-count">{{pastReports.length}}</view>
+      </view>
+
+      <scroll-view wx:if="{{pastReports.length}}" class="history-list" scroll-y="{{true}}">
+        <navigator
+          wx:for="{{pastReports}}"
+          wx:key="monthKey"
+          class="history-row"
+          url="/pages/report/report?month={{item.monthKey}}"
+        >
+          <view class="history-month"><text>{{item.monthNumber}} 月</text><text>{{item.year}}</text></view>
+          <view class="history-meta">{{item.itemCount}} 件展品</view>
+          <view class="history-link">点击查看 <text>›</text></view>
+        </navigator>
+      </scroll-view>
+
+      <view wx:else class="history-empty">
+        <view class="empty-mark">◇</view>
+        <view>还没有过往月报</view>
+        <text>下个月，这里会收藏你的第一份月报</text>
+      </view>
+    </view>
+  </view>
+
+  <museum-guide></museum-guide>
+  <museum-nav active="summary"></museum-nav>
+</view>
