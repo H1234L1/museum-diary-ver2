@@ -2,6 +2,18 @@
   <view class="home-hero">
     <image class="hero-art" src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
     <view class="hero-shade"></view>
+    <navigator
+      class="profile-button"
+      url="/pages/profile/profile"
+      open-type="redirect"
+      hover-class="profile-button-hover"
+      aria-label="打开我的页面"
+    >
+      <view class="profile-icon">
+        <view class="profile-icon-head"></view>
+        <view class="profile-icon-body"></view>
+      </view>
+    </navigator>
     <view class="museum-title">
       <view>人生博物馆</view>
       <text>Life Museum</text>
