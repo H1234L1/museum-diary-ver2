@@ -1,0 +1,30 @@
+*   [33m22417bd[m[33m ([m[1;31morigin/new_version[m[33m, [m[1;32mnew_version[m[33m, [m[1;32mmain[m[33m)[m Merge pull request #8 from Arlania/revert-7-新手引导
+[31m|[m[32m\[m  
+[31m|[m * [33m3b46f38[m[33m ([m[1;31morigin/revert-7-新手引导[m[33m)[m Revert "新手引导 删除记录页面"
+[31m|[m[31m/[m  
+*   [33mb8c9dbc[m Merge pull request #7 from Arlania/新手引导
+[33m|[m[34m\[m  
+[33m|[m *   [33m3f891e4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32m新手引导[m[33m, [m[1;31morigin/新手引导[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge branch 'main' into 新手引导
+[33m|[m [35m|[m[33m\[m  
+[33m|[m [35m|[m[33m/[m  
+[33m|[m[33m/[m[35m|[m   
+* [35m|[m   [33ma67fa57[m Merge pull request #6 from Arlania/展品展示
+[1;31m|[m[1;32m\[m [35m\[m  
+[1;31m|[m * [35m|[m [33m59eb2cc[m[33m ([m[1;31morigin/展品展示[m[33m)[m 文字展品固定scroll+下面的button
+* [1;32m|[m [35m|[m [33m3e0b26a[m Merge pull request #5 from Arlania/略缩图
+[1;33m|[m[1;32m\[m[1;32m|[m [35m|[m 
+[1;33m|[m * [35m|[m [33m6ccf1fd[m[33m ([m[1;31morigin/略缩图[m[33m)[m basic outline of 略缩图（主馆）
+[1;33m|[m[1;33m/[m [35m/[m  
+[1;33m|[m * [33m0274a84[m 新手引导 删除记录页面
+[1;33m|[m [1;34m|[m * [33m779e5fd[m[33m ([m[1;31morigin/revert-3-artifacts[m[33m)[m Revert "artifacts design"
+[1;33m|[m [1;34m|[m[1;33m/[m  
+[1;33m|[m[1;33m/[m[1;34m|[m   
+* [1;34m|[m [33ma4caba1[m Merge pull request #3 from Arlania/artifacts
+[1;36m|[m[1;34m\[m[1;34m|[m 
+[1;36m|[m * [33m6213767[m[33m ([m[1;31morigin/artifacts[m[33m, [m[1;32martifacts[m[33m)[m artifacts design
+* [31m|[m   [33mb72a730[m Merge pull request #2 from Arlania/navigation
+[32m|[m[33m\[m [31m\[m  
+[32m|[m * [31m|[m [33medb3ee2[m[33m ([m[1;31morigin/navigation[m[33m)[m navigation
+[32m|[m[32m/[m [31m/[m  
+* [31m|[m [33m808cf99[m Merge pull request #1 from Arlania/Helen
+[34m|[m[31m\[m[31m|[m 

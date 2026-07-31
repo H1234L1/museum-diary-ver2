@@ -1,0 +1,27 @@
+{
+  "pages": [
+    "pages/onboarding/onboarding",
+    "pages/index/index",
+    "pages/gallery/gallery",
+    "pages/hall/hall",
+    "pages/summary/summary",
+    "pages/report/report",
+    "pages/detail/detail",
+    "pages/record/record",
+    "pages/profile/profile",
+    "pages/manage/manage"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#eee6dc",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "museum-nav": "/components/museum-nav/museum-nav",
+    "museum-guide": "/components/museum-guide/museum-guide"
+  },
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
