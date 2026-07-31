@@ -1,0 +1,5 @@
+/* components/ai-quickstart/ai-quickstart.wxss */
+.main {
+  display: block;
+  text-align: left;
+}

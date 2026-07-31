@@ -1,0 +1,4 @@
+<!--components/ai-quickstart/ai-quickstart.wxml-->
+<view class="main" bindtap="onTap" style="background-color: {{color}};">
+    {{ detail }}
+</view>

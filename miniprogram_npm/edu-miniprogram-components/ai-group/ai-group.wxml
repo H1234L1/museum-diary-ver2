@@ -1,0 +1,4 @@
+<!--components/ai-group/ai-group.wxml-->
+<view bindchat="onChat" bindinitbot="onInitBot" bindaddrag="onAddRag">
+    <slot />
+</view>

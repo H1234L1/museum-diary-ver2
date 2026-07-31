@@ -1,0 +1,15 @@
+<!--components/turtlecanvas/turtle-canvas.wxml-->
+<view style="{{ container_style }}">
+  <canvas id="turtlecanvas" type="2d"
+    style="{{ canvas_style }}"
+  ></canvas>
+  <canvas id="turtleicon" type="2d"
+    style="{{ icon_style }}"
+  ></canvas>
+
+</view>
+<view wx:if="{{repl}}" class="repl">
+  <input class="repl-input" bindinput="onReplInput" value="{{ repl_value }}" style="{{ repl_style }}"/>
+  <button class="repl-button" bindtap="onReplSubmit" style="max-width:80rpx;"> run </button>
+  <button class="repl-button" bindtap="onReplClear" style="max-width:100rpx;"> clear </button>
+</view>

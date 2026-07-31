@@ -1,0 +1,14 @@
+{
+  "component": true,
+  "usingComponents": {
+    "mcontent": "/miniprogram_npm/edu-miniprogram-components/multi-content/multi-content",
+    "ai-group": "/miniprogram_npm/edu-miniprogram-components/ai-group/ai-group",
+    "ai-personality": "/miniprogram_npm/edu-miniprogram-components/ai-personality/ai-personality",
+    "ai-bot-name": "/miniprogram_npm/edu-miniprogram-components/ai-bot-name/ai-bot-name",
+    "ai-rag": "/miniprogram_npm/edu-miniprogram-components/ai-rag/ai-rag",
+    "ai-content": "/miniprogram_npm/edu-miniprogram-components/ai-content/ai-content",
+    "ai-chat": "/miniprogram_npm/edu-miniprogram-components/ai-chat/ai-chat",
+    "ai-quickchat": "/miniprogram_npm/edu-miniprogram-components/ai-quickchat/ai-quickchat"
+    
+  }
+}

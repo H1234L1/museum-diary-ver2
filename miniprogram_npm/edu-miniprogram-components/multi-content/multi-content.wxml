@@ -1,0 +1,51 @@
+<view wx:if="{{type!='popup'}}" class="wrapper" bindtap="onTap">
+    <view wx:if="{{type=='text'}}" class="main text"> {{detail}} </view>
+
+    <view wx:if="{{type=='title'}}" class="main title"> {{detail}} </view>
+
+    <view wx:if="{{type=='heading'}}" class="main heading"> {{detail}} </view>
+
+    <image wx:if="{{type=='image'}}" class="main image" style="{{ dstyle }}" src="{{detail}}" bindload="onImageLoaded" />
+
+    <image wx:if="{{type=='background-image'}}" class="main image bgi" style="{{ dstyle }}" src="{{detail}}" bindload="onImageLoaded" />
+
+    <video wx:if="{{type=='video'}}" class="main video" src="{{detail}}" />
+
+    <view wx:if="{{type=='callout'}}" class="main callout">
+        <view class="main callout heading">
+            <image class="main callout icon" src="{{ image_data.icon }}" />
+        </view>
+        <view class="main callout content">{{detail}}</view>
+    </view>
+
+    <view wx:if="{{type=='block'}}" class="main block" style="{{ 'background-color:'+detail+';' }}">
+        <slot></slot>
+    </view>
+
+    <view wx:if="{{type=='divider'}}" class="main divider" />
+
+    <button wx:if="{{type=='button'}}" class="main button">{{detail}}</button>
+
+</view>
+
+<view wx:if="{{type=='popup'}}" class="wrapper">
+    <view wx:if="{{show_popup}}" class="main popup-mask" catchtap="onPopup" catchtouchmove="onTouchMove" />
+    <view class="main popup-switch" catchtap="onPopup" catchtouchmove="onTouchMove">
+        <image style="height: 100rpx; width: 100rpx;" src="{{detail}}"/>
+    </view>
+    <view id="popup" hidden="{{!show_popup}}" class="main popup"
+    style="{{popup_style}}" catchtouchmove="onTouchMove">
+        <slot />
+    </view>
+</view>
+
+<view wx:if="{{type=='popup-edit'}}" class="wrapper">
+    <view wx:if="{{true}}" class="main popup-mask" catchtap="onPopup" catchtouchmove="onTouchMove" />
+    <view class="main popup-switch" catchtap="onPopup" catchtouchmove="onTouchMove">
+        <image style="height: 100rpx; width: 100rpx;" src="{{detail}}"/>
+    </view>
+    <view id="popup" hidden="{{!true}}" class="main popup"
+    style="{{popup_style}}" catchtouchmove="onTouchMove">
+        <slot />
+    </view>
+</view>

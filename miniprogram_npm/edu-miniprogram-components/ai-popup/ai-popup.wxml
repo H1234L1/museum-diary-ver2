@@ -1,0 +1,36 @@
+<mcontent type="popup" detail="https://t73-cloudfile.oss-cn-zhangjiakou.aliyuncs.com/super/mini/self/aidemo/avatar.jpg" style="position: fixed; width:100rpx; bottom: 50rpx; right: 50rpx; ">
+    <view class="container main">
+        <ai-group bindupdatechat="updateChat" style="width: 100%;">
+            <ai-rag wx:if="{{rag_1}}" detail="{{rag_1}}" />
+            <ai-rag wx:if="{{rag_2}}" detail="{{rag_2}}" />
+            <mcontent type="divider" style="height: 30rpx;" />
+            <mcontent type="block" style="width: 600rpx; height: 100rpx; display: block; box-sizing: border-box; margin: auto;">
+                <mcontent type="image" detail="https://t73-cloudfile.oss-cn-zhangjiakou.aliyuncs.com/super/mini/self/aidemo/avatar.jpg" style="width: 80rpx; height: 80rpx; position: relative; left: 20rpx; top: 10rpx" />
+                <ai-bot-name detail="小助手" style="position: relative; top: -72rpx; left: 130rpx; display: block; box-sizing: border-box;"/>
+                <ai-content style="display: none;" detail="{{content}}" />
+                <ai-personality style="position: relative; top: -145rpx; left: 320rpx; display: block; box-sizing: border-box;" detail="{{personality}}" />
+            </mcontent>
+            <mcontent type="divider" style="height: 30rpx;" />
+            <scroll-view scroll-y scroll-into-view="{{last_chat}}" style="height: {{chat_area_height}}rpx; display: block; box-sizing: border-box; width: 600rpx; margin: auto;">
+                <view wx:for="{{chat_history}}">
+                    <view wx:if="{{item.sender_type=='BOT'}}" class="chat-bubble left">
+                        <mcontent type="image" detail="https://t73-cloudfile.oss-cn-zhangjiakou.aliyuncs.com/super/mini/self/aidemo/avatar.jpg" style="flex-grow:0; flex-shrink:0; height: 80rpx; width: 80rpx; margin:0 10rpx;" />
+                        <text style="max-width:385rpx; background-color: #f5f5f5; padding:15rpx 20rpx; border-radius: 20rpx;">{{item.text}}</text>
+                    </view>
+                    <view wx:if="{{item.sender_name=='我'}}" class="chat-bubble right">
+                        <text style="max-width:385rpx; background-color: #83e353; padding:15rpx 20rpx; border-radius: 20rpx;">{{item.text}}</text>
+                    </view>
+                </view>
+                <view id="bottom" />
+            </scroll-view>
+            <view style="width: 600rpx; margin: auto;">
+                <ai-quickchat wx:if="{{quickchat_1}}" detail="{{quickchat_1}}" />
+                <ai-quickchat wx:if="{{quickchat_2}}" detail="{{quickchat_2}}" />
+                <ai-quickchat wx:if="{{quickchat_3}}" detail="{{quickchat_3}}" />
+                <ai-quickchat wx:if="{{quickchat_4}}" detail="{{quickchat_4}}" />
+            </view>
+            <mcontent type="divider" style="height: 15rpx;" />
+            <ai-chat />
+        </ai-group>
+    </view>
+</mcontent>

@@ -1,0 +1,88 @@
+<text wx:if="{{ !hidden }}" class="title">{{ title }}</text>
+<view wx:if="{{ !hidden && !transpose }}" class="itable" style="{{ table_style }}">
+    <scroll-view
+        wx:if="{{ !hideHeader }}"
+        class="itable-header"
+        scroll-x="true"
+        scroll-left="{{ scroll_left }}"
+        bindscroll="onScrollSync"
+    >
+        <view class="itable-row">
+            <view
+                wx:for="{{ keys }}"
+                class="itable-cell"
+                style="min-width:{{item.width}}; background-color: rgb(217,217,217);"
+            > {{ item.label }} </view>
+        </view>
+    </scroll-view>
+    <scroll-view
+        class="itable-content"
+        scroll-x="true"
+        scroll-y="true"
+        bindscroll="onScrollSync"
+        scroll-left="{{ scroll_left }}"
+        style="{{ content_style }}"
+    >
+        <view wx:for="{{ records }}" class="itable-row" wx:for-item="record" wx:for-index="i">
+            <view
+                wx:for="{{ keys }}"
+                class="itable-cell" wx:for-index="j"
+                style="min-width:{{item.width}}; background-color: rgb(245,245,245);"
+                bindtap="onCellTap"
+                data-i="{{i}}" data-j="{{j}}"
+            > {{ record[item.name] }} </view>
+        </view>
+    </scroll-view>
+</view>
+
+<view wx:if="{{ !hidden && transpose }}" class="itable t" style="{{ table_style }}">
+    <scroll-view
+        wx:if="{{ !hideHeader }}"
+        class="itable-header t"
+        style="{{ header_style_t }}"
+        scroll-y="true"
+        scroll-top="{{ scroll_top }}"
+        bindscroll="onScrollSyncT"
+    >
+        <view class="itable-row t">
+            <view
+                wx:for="{{ keys }}"
+                class="itable-cell"
+                style="min-width:{{ column_width_t }}; background-color: rgb(217,217,217);"
+            > {{ item.label }} </view>
+        </view>
+    </scroll-view>
+    <scroll-view
+        class="itable-content t"
+        scroll-x="true"
+        scroll-y="true"
+        scroll-top="{{ scroll_top }}"
+        bindscroll="onScrollSyncT"
+        style="{{ content_style }}"
+    >
+        <view wx:for="{{ records }}" class="itable-row t" wx:for-item="record" wx:for-index="i">
+            <view
+                wx:for="{{ keys }}"
+                class="itable-cell t" wx:for-index="j"
+                style="width:{{ column_width_t }}; background-color: rgb(245,245,245);"
+                bindtap="onCellTap"
+                data-i="{{i}}" data-j="{{j}}"
+            > {{ record[item.name] }} </view>
+        </view>
+    </scroll-view>
+</view>
+
+<button wx:if="{{ showAddButton }}"
+    style="margin-top: 20rpx;"
+    bindtap="onAddRecord"
+>添加数据</button>
+
+<view wx:if="{{ is_input_number || is_input_string }}" class="input-iso" />
+<view wx:if="{{ is_input_number || is_input_string }}" class="num-input-container">
+    <view class="num-input-container-hint" wx:if="{{ is_input_number }}">请输入数字</view>
+    <view class="num-input-container-hint" wx:if="{{ is_input_string }}">请输入文字</view>
+    <view class="num-input-container-hint" style="font-size: 25rpx;">第 {{input_i+1}} 条记录 的 {{keys[input_j].label}}</view>
+    <input class="num-input-container-input" auto-focus type="number" bindinput="onInput" />
+    <button class="num-input-container-button" bindtap="onInputConfirm"> 确认 </button>
+    <button class="num-input-container-button" bindtap="onInputCancel"> 取消 </button>
+</view>

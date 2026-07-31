@@ -1,0 +1,107 @@
+:host {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.main.title {
+  font-size: xx-large;
+  text-align: center;
+  margin-top: 50rpx;
+  padding: 0;
+}
+
+.main.heading {
+  font-size: x-large;
+  margin-top: 30rpx;
+  padding: 0 20rpx;
+}
+
+.main.text {
+  margin-top: 10rpx;
+  padding: 20rpx;
+}
+
+.main.image {
+  width: 100%;
+  margin-top: 10rpx;
+}
+
+.main.video {
+  width: 100%;
+  margin-top: 10rpx;
+}
+
+.main.callout {
+  width: 100%;
+  margin-top: 10rpx;
+}
+
+.main.callout.icon {
+  height: 36rpx;
+  width: 36rpx;
+  margin-right: 10rpx;
+}
+
+.main.callout.heading {
+  box-sizing: border-box;
+  background-color: #dddddd;
+  padding: 0 10rpx;
+}
+
+.main.callout.content {
+  box-sizing: border-box;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 20rpx 10rpx;
+  width: 100%;
+}
+
+.main.block {
+  width: 100%;
+  height: 100%;
+}
+
+.main.button {
+  margin-top: 30rpx;
+}
+
+.main.image {
+  margin-top: 0rpx;
+}
+
+.main.divider {
+  height: 20rpx;
+}
+
+.main.popup-switch {
+  height: 100rpx;
+  width: 100rpx;
+  border-radius: 50rpx;
+}
+
+.main.popup-mask {
+  background-color: rgba(0,0,0,0.7);
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.main.popup {
+  background-color: white;
+  width: 650rpx;
+  border-radius: 5rpx;
+  position: fixed;
+  bottom: 100rpx;
+  right: 50rpx;
+  overflow-y: hidden;
+}

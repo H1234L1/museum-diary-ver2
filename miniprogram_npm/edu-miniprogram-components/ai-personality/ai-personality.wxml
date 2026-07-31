@@ -1,0 +1,4 @@
+<!--components/ai-quickstart/ai-quickstart.wxml-->
+<view class="main" style="background-color: palegreen;">
+    性格：{{ detail }}
+</view>

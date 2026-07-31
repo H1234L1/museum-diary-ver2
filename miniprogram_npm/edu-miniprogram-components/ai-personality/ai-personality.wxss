@@ -1,0 +1,8 @@
+/* components/ai-quickstart/ai-quickstart.wxss */
+.main {
+  border-radius: 20rpx;
+  padding: 10rpx 30rpx;
+  display: inline-flex;
+  text-align: center;
+  margin: 10rpx;
+}

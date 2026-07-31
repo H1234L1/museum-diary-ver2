@@ -1,0 +1,12 @@
+.chat-bubble {
+  display: flex;
+  margin: 10rpx 0;
+}
+
+.left {
+  flex-direction: row;
+}
+
+.right {
+  flex-direction: row-reverse;
+}

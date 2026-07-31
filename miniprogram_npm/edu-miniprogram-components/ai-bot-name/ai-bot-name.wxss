@@ -1,0 +1,8 @@
+/* components/ai-quickstart/ai-quickstart.wxss */
+.main {
+  display: block;
+  text-align: left;
+  margin: 0;
+  font-size: xx-large;
+  padding: 0;
+}

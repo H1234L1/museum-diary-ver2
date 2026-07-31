@@ -1,0 +1,4 @@
+<view class="main">
+    <input class="input" model:value="{{value}}"/>
+    <button class="button" bindtap="send"> 发送 </button>
+</view>
