@@ -1,4 +1,4 @@
-<view class="detail-page {{type === 'text' ? 'static-detail' : ''}}">
+<view class="detail-page {{type === 'text' || type === 'audio' ? 'static-detail' : ''}} {{type === 'audio' ? 'audio-detail' : ''}}">
   <view class="detail-nav" style="padding-top: {{statusBarHeight}}px;">
     <view class="detail-nav-row" style="height: {{navigationBarHeight}}px;">
       <view class="back" bindtap="goBack">‹</view>
@@ -63,26 +63,43 @@
       </view>
     </view>
 
-    <view wx:if="{{type === 'audio'}}" class="audio-exhibit secondary-exhibit">
-      <view class="gramophone-frame" bindtap="toggleAudio">
-        <image src="/assets/art/gramophone.jpg" mode="aspectFill"></image>
-        <view class="play-button">{{playing ? 'Ⅱ' : '▶'}}</view>
-      </view>
-      <view class="description-card">
+    <view wx:if="{{type === 'audio'}}" class="audio-exhibit" style="height: {{textGalleryHeight}}px;">
+      <view class="gallery-ceiling"></view>
+      <view class="spotlight-fixture"><view class="spotlight-rim"></view><view class="spotlight-bulb"></view></view>
+      <view class="spotlight-beam audio-beam"></view>
+
+      <view class="audio-scene-content">
+        <view class="exhibit-number">No. {{exhibitNumber}}</view>
+
+        <view class="gramophone-artifact" aria-label="留声机展品">
+          <image class="gramophone-image" src="/assets/art/gramophone-cutout.png" mode="aspectFit"></image>
+          <view class="artifact-contact-shadow"></view>
+          <view class="museum-shelf">
+            <view class="shelf-top"></view>
+            <view class="shelf-front"></view>
+            <view class="shelf-support shelf-support-left"></view>
+            <view class="shelf-support shelf-support-right"></view>
+            <view class="shelf-shadow"></view>
+          </view>
+        </view>
+
+        <view class="description-card audio-card">
         <view class="exhibit-title">{{record ? record.title : '夜里的留言'}}</view>
         <view class="exhibit-date">{{displayDate}} 入藏</view>
-        <view class="tiny-ornament">— ◇ —</view>
-        <view wx:if="{{record}}" class="exhibit-description">{{record.story || '这是一段被收藏下来的声音。'}}</view>
-        <view wx:else class="exhibit-description">这是一段来自心底的声音，<br/>在夜深人静时录下，留给未来的自己。<br/>每一句话，都是当时最真实的心情。</view>
+        <view wx:if="{{record && record.story}}" class="exhibit-description">{{record.story}}</view>
+        <view class="audio-control" bindtap="toggleAudio">
+          <view class="audio-control-icon">{{playing ? 'Ⅱ' : '▶'}}</view>
+        </view>
         <view class="hall-link">所属展厅 <text>{{record ? record.hall : '主馆'}}　›</text></view>
+        </view>
       </view>
     </view>
   </view>
 
   <view class="detail-actions showcase-actions">
-    <button open-type="share"><view class="action-icon">↗</view><text>分享</text></button>
+    <view class="action-button" bindtap="editItem"><view class="action-icon edit-action-icon">✎</view><text>编辑</text></view>
     <view class="action-button" bindtap="comment"><view class="action-icon">○</view><text>留言</text></view>
-    <view class="action-button" bindtap="showActions"><view class="action-icon">•••</view><text>更多</text></view>
+    <button open-type="share"><view class="action-icon share-action-icon"><view class="share-arrow-shaft"></view><view class="share-arrow-head"></view></view><text>分享</text></button>
   </view>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 </view>
