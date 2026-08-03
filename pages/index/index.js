@@ -28,6 +28,9 @@ Page({
   openSummary() { this.go('/pages/summary/summary') },
   openProfile() { this.go('/pages/profile/profile') },
   createExhibit() { this.go('/pages/record/record?new=1') },
+  handleTutorialAction(e) {
+    if (e.detail.stepId === 'collect-first-exhibit') this.createExhibit()
+  },
   onShareAppMessage() {
     return { title: '人生博物馆', path: '/pages/index/index' }
   }

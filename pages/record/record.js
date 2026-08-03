@@ -19,11 +19,13 @@ Page({
     day: today.slice(-2),
     image: '',
     story: '',
+    storyFocused: false,
     hall: '主馆',
     voiceMode: false,
     recording: false,
     cancelling: false,
     audio: '',
+    audioDurationMs: 0,
     textBoxHeight: 41,
     textBoxMinHeight: 41,
     textBoxMaxHeight: 180,
@@ -58,7 +60,7 @@ Page({
         recorderManager.stop()
       }
     }
-    this.handleRecorderStop = ({ tempFilePath }) => {
+    this.handleRecorderStop = ({ tempFilePath, duration = 0 }) => {
       if (discardNextRecording) {
         discardNextRecording = false
         this.setData({
@@ -74,6 +76,7 @@ Page({
           recording: false,
           cancelling: false,
           audio,
+          audioDurationMs: Math.max(0, Number(duration) || 0),
           voiceButtonText: '已录好 · 按住重录'
         })
       })
@@ -217,6 +220,15 @@ Page({
     this.setData({ story: e.detail.value })
   },
 
+  handleStoryBlur() {
+    this.setData({ storyFocused: false })
+  },
+
+  handleTutorialAction(e) {
+    if (e.detail.stepId !== 'learn-recording') return
+    this.setData({ voiceMode: false, storyFocused: true })
+  },
+
   calculateTextBoxLimit() {
     const windowInfo = wx.getWindowInfo
       ? wx.getWindowInfo()
@@ -289,6 +301,7 @@ Page({
       image: this.data.image,
       story: this.data.story.trim(),
       audio: this.data.audio,
+      audioDurationMs: this.data.audioDurationMs,
       hall: this.data.hall || '主馆',
       type,
       createdAt: Date.now()

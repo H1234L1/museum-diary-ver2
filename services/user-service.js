@@ -1,4 +1,5 @@
 const storage = require('./storage-adapter')
+const { TRACKING_STORAGE_KEY } = require('./tracking-service')
 
 const USER_STORAGE_KEY = 'museum:user:v1'
 const DAY_IN_MS = 24 * 60 * 60 * 1000
@@ -46,6 +47,13 @@ const createUser = async () => {
     createdAt: new Date().toISOString(),
     items: []
   })
+}
+
+const clearUserData = async () => {
+  await Promise.all([
+    storage.remove(USER_STORAGE_KEY),
+    storage.remove(TRACKING_STORAGE_KEY)
+  ])
 }
 
 const addItem = async (item) => {
@@ -208,6 +216,7 @@ module.exports = {
   getUser,
   saveUser,
   createUser,
+  clearUserData,
   addItem,
   createHall,
   deleteItem,

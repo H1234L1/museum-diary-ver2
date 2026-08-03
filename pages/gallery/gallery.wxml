@@ -50,7 +50,7 @@
   </view>
 
   <view class="gallery-bottom-space"></view>
-  <museum-guide></museum-guide>
+  <museum-guide bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="gallery"></museum-nav>
 
   <view wx:if="{{creatorVisible}}" class="creator-mask" bindtap="closeCreator">

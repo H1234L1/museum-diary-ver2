@@ -67,6 +67,10 @@ Page({
     })
   },
 
+  handleTutorialAction(e) {
+    if (e.detail.stepId === 'create-gallery') this.openCreator()
+  },
+
   closeCreator() {
     if (this.data.creating) return
     this.setData({ creatorVisible: false })

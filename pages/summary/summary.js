@@ -62,5 +62,14 @@ Page({
       currentItemCount: getItemsForMonth(user, currentMonthKey).length,
       pastReports
     })
+  },
+
+  openCurrentReport() {
+    if (!this.data.currentMonthKey) return
+    wx.navigateTo({ url: `/pages/report/report?month=${this.data.currentMonthKey}` })
+  },
+
+  handleTutorialAction(e) {
+    if (e.detail.stepId === 'discover-reports') this.openCurrentReport()
   }
 })

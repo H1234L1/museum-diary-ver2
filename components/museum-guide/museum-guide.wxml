@@ -1,4 +1,4 @@
-<view wx:if="{{visible}}" class="guide-shell guide-{{step.placement}}">
+<view wx:if="{{visible && !focusing}}" class="guide-shell guide-{{step.placement}}">
   <view class="guide-avatar">馆</view>
   <view class="guide-bubble">
     <view class="guide-topline">
@@ -9,7 +9,27 @@
     <view class="guide-message">{{step.message}}</view>
     <view class="guide-actions">
       <button class="guide-skip" bindtap="skip">跳过</button>
-      <button class="guide-next" loading="{{moving}}" disabled="{{moving}}" bindtap="next">{{step.actionLabel}} <text>›</text></button>
+      <button class="guide-next" loading="{{moving}}" disabled="{{moving}}" bindtap="next">
+        {{step.actionLabel}} <text>›</text>
+      </button>
     </view>
   </view>
 </view>
+
+<block wx:if="{{visible && focusing}}">
+  <view class="focus-blocker focus-blocker-top" style="height: {{focusTop}}px;" bindtap="remindFocusedAction"></view>
+  <view class="focus-blocker focus-blocker-bottom" style="top: {{focusBottom}}px;" bindtap="remindFocusedAction"></view>
+  <view class="focus-blocker focus-blocker-left" style="top: {{focusTop}}px; width: {{focusLeft}}px; height: {{focusHeight}}px;" bindtap="remindFocusedAction"></view>
+  <view class="focus-blocker focus-blocker-right" style="left: {{focusRight}}px; top: {{focusTop}}px; height: {{focusHeight}}px;" bindtap="remindFocusedAction"></view>
+
+  <view
+    class="focus-ring"
+    style="left: {{focusLeft}}px; top: {{focusTop}}px; width: {{focusWidth}}px; height: {{focusHeight}}px;"
+  ></view>
+  <view
+    class="focus-proxy"
+    style="left: {{focusLeft}}px; top: {{focusTop}}px; width: {{focusWidth}}px; height: {{focusHeight}}px;"
+    bindtap="performFocusedAction"
+  ></view>
+  <view class="focus-hint" style="top: {{focusHintTop}}px;">{{step.focusHint}}</view>
+</block>
