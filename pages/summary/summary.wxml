@@ -16,9 +16,9 @@
         <text>共入藏 {{currentItemCount}} 件展品</text>
       </view>
 
-      <navigator class="view-report-button" url="/pages/report/report?month={{currentMonthKey}}">
+      <view class="view-report-button" bindtap="openCurrentReport">
         <text>点击查看</text><text class="button-arrow">›</text>
-      </navigator>
+      </view>
     </view>
 
     <view class="report-panel history-panel">
@@ -51,6 +51,6 @@
     </view>
   </view>
 
-  <museum-guide></museum-guide>
+  <museum-guide bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="summary"></museum-nav>
 </view>

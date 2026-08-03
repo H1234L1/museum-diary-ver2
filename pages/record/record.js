@@ -19,11 +19,13 @@ Page({
     day: today.slice(-2),
     image: '',
     story: '',
+    storyFocused: false,
     hall: '主馆',
     voiceMode: false,
     recording: false,
     cancelling: false,
     audio: '',
+    audioDurationMs: 0,
     textBoxHeight: 41,
     textBoxMinHeight: 41,
     textBoxMaxHeight: 180,
@@ -80,6 +82,15 @@ Page({
 
   setStory(e) {
     this.setData({ story: e.detail.value })
+  },
+
+  handleStoryBlur() {
+    this.setData({ storyFocused: false })
+  },
+
+  handleTutorialAction(e) {
+    if (e.detail.stepId !== 'learn-recording') return
+    this.setData({ voiceMode: false, storyFocused: true })
   },
 
   calculateTextBoxLimit() {

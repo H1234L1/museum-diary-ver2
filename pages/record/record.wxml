@@ -47,8 +47,10 @@
       disable-default-padding="{{true}}"
       placeholder="写点什么"
       placeholder-class="story-placeholder"
+      focus="{{storyFocused}}"
       bindinput="setStory"
       bindlinechange="resizeStoryInput"
+      bindblur="handleStoryBlur"
     ></textarea>
 
     <view
@@ -69,6 +71,7 @@
   <view class="save-note">内容将默认收藏到「主馆」</view>
 
   <view class="bottom-space"></view>
+  <museum-guide bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="record"></museum-nav>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 </view>

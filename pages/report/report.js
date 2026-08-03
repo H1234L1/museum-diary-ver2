@@ -1,22 +1,41 @@
 const {
   getUser,
   getMonthKey,
-  getItemsForMonth,
-  getMonthlyHighlight,
-  saveMonthlyHighlight
+  getItemsForMonth
 } = require('../../services/user-service')
+const { getMonthlyTracking } = require('../../services/tracking-service')
 
 const formatMonth = (monthKey) => monthKey.replace('-', '.')
 const getMonthName = (monthKey) => `${Number(monthKey.slice(5))} 月`
-const truncate = (value, length = 22) => {
-  return value.length > length ? `${value.slice(0, length)}…` : value
+
+const countStoryCharacters = (items) => {
+  return items.reduce((total, item) => {
+    const story = String(item.story || '').replace(/\s/g, '')
+    return total + Array.from(story).length
+  }, 0)
 }
 
-const splitSentences = (value) => {
-  return value
-    .split(/[。！？!?；;.\n]/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean)
+const getFavoriteHall = (items) => {
+  if (!items.length) return '暂无'
+
+  const hallCounts = items.reduce((counts, item) => {
+    const hall = String(item.hall || '主馆').trim() || '主馆'
+    counts[hall] = (counts[hall] || 0) + 1
+    return counts
+  }, {})
+
+  return Object.keys(hallCounts).sort((a, b) => hallCounts[b] - hallCounts[a])[0]
+}
+
+const formatExitTime = (timestamp) => {
+  if (!timestamp) return '--:--'
+  const date = new Date(timestamp)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+const getAudioMinutes = (items) => {
+  const durationMs = items.reduce((total, item) => total + Math.max(0, Number(item.audioDurationMs) || 0), 0)
+  return durationMs ? Math.max(1, Math.round(durationMs / 60000)) : 0
 }
 
 Page({
@@ -26,17 +45,13 @@ Page({
     monthText: '',
     monthName: '',
     monthlyItemCount: 0,
-    monthlyStoryDays: 0,
     monthlyWordCount: 0,
+    monthlyImageCount: 0,
+    monthlyVisitDays: 0,
+    monthlyActiveMinutes: 0,
     monthlyAudioMinutes: 0,
-    monthlyHighlight: null,
-    photoOptions: [],
-    sentenceOptions: [],
-    selectorVisible: false,
-    selectionMode: '',
-    selectionOptions: [],
-    selectionTitle: '',
-    toast: ''
+    favoriteHall: '暂无',
+    latestExitTime: '--:--'
   },
 
   async onLoad(options = {}) {
@@ -52,108 +67,39 @@ Page({
   },
 
   async loadReport() {
-    const user = await getUser()
+    const monthKey = this.data.requestedMonthKey || getMonthKey()
+    const [user, tracking] = await Promise.all([
+      getUser(),
+      getMonthlyTracking(monthKey)
+    ])
+
     if (!user) {
       wx.reLaunch({ url: '/pages/onboarding/onboarding' })
       return
     }
 
-    const monthKey = this.data.requestedMonthKey || getMonthKey()
     const monthItems = getItemsForMonth(user, monthKey)
-    const photoOptions = monthItems
-      .filter((item) => item.image)
-      .map((item) => ({
-        id: item.id,
-        image: item.image,
-        date: item.date,
-        label: item.story ? truncate(item.story) : `${item.date} 的照片`
-      }))
-    const sentenceOptions = monthItems.reduce((options, item) => {
-      splitSentences(item.story || '').forEach((text, index) => {
-        options.push({
-          id: `${item.id}-sentence-${index}`,
-          itemId: item.id,
-          text,
-          date: item.date
-        })
-      })
-      return options
-    }, [])
-    const uniqueStoryDays = new Set(monthItems.filter((item) => item.story).map((item) => item.date)).size
-    const monthlyWordCount = monthItems.reduce((sum, item) => sum + (item.story || '').length, 0)
+    const activeMs = Math.max(0, Number(tracking.activeMs) || 0)
 
     this.setData({
       monthKey,
       monthText: formatMonth(monthKey),
       monthName: getMonthName(monthKey),
       monthlyItemCount: monthItems.length,
-      monthlyStoryDays: uniqueStoryDays,
-      monthlyWordCount,
-      monthlyAudioMinutes: 0,
-      monthlyHighlight: getMonthlyHighlight(user, monthKey),
-      photoOptions,
-      sentenceOptions
+      monthlyWordCount: countStoryCharacters(monthItems),
+      monthlyImageCount: monthItems.filter((item) => Boolean(item.image)).length,
+      monthlyVisitDays: tracking.visitDays,
+      monthlyActiveMinutes: activeMs ? Math.max(1, Math.round(activeMs / 60000)) : 0,
+      monthlyAudioMinutes: getAudioMinutes(monthItems),
+      favoriteHall: getFavoriteHall(monthItems),
+      latestExitTime: formatExitTime(tracking.lastExitAt)
     })
-  },
-
-  editMoment() {
-    wx.showActionSheet({
-      itemList: ['选择本月照片', '选择本月一句日记'],
-      success: ({ tapIndex }) => {
-        if (tapIndex === 0) this.openSelector('photo')
-        if (tapIndex === 1) this.openSelector('sentence')
-      }
-    })
-  },
-
-  openSelector(selectionMode) {
-    const isPhoto = selectionMode === 'photo'
-    const selectionOptions = isPhoto ? this.data.photoOptions : this.data.sentenceOptions
-
-    if (!selectionOptions.length) {
-      this.notice(isPhoto ? '这个月还没有带照片的日记' : '这个月还没有可选择的日记句子')
-      return
-    }
-
-    this.setData({
-      selectorVisible: true,
-      selectionMode,
-      selectionOptions,
-      selectionTitle: isPhoto ? '选择本月照片' : '选择本月一句日记'
-    })
-  },
-
-  closeSelector() {
-    this.setData({ selectorVisible: false })
-  },
-
-  noop() {},
-
-  async chooseHighlight(e) {
-    const option = this.data.selectionOptions[e.currentTarget.dataset.index]
-    if (!option) return
-
-    const highlight = this.data.selectionMode === 'photo'
-      ? { kind: 'photo', itemId: option.id, image: option.image, date: option.date }
-      : { kind: 'sentence', itemId: option.itemId, text: option.text, date: option.date }
-
-    try {
-      await saveMonthlyHighlight(this.data.monthKey, highlight)
-      this.setData({ monthlyHighlight: highlight, selectorVisible: false })
-    } catch (error) {
-      this.notice('保存本月记忆失败，请重试')
-    }
   },
 
   goBack() {
     wx.navigateBack({
       fail: () => wx.redirectTo({ url: '/pages/summary/summary' })
     })
-  },
-
-  notice(toast) {
-    this.setData({ toast })
-    setTimeout(() => this.setData({ toast: '' }), 1800)
   },
 
   onShareAppMessage() {
