@@ -12,7 +12,7 @@ const getHallItems = (user, hall) => {
 Page({
   data: {
     mainHallCount: '000',
-    mainHallUrl: '/pages/hall/hall',
+    mainHallUrl: '/pages/showcase/showcase?hall=%E4%B8%BB%E9%A6%86',
     subHalls: [],
     coverOptions: [],
     creatorVisible: false,
@@ -51,7 +51,7 @@ Page({
 
     this.setData({
       mainHallCount: formatStat(getCollectionCount(user)),
-      mainHallUrl: '/pages/hall/hall',
+      mainHallUrl: '/pages/showcase/showcase?hall=%E4%B8%BB%E9%A6%86',
       subHalls,
       coverOptions
     })
@@ -117,14 +117,8 @@ Page({
   openHall(e) {
     const hall = this.data.subHalls[e.currentTarget.dataset.index]
     if (!hall) return
-
-    if (!hall.firstItem) {
-      this.notice('副馆已建好，暂时还没有展品')
-      return
-    }
-
     wx.navigateTo({
-      url: `/pages/detail/detail?type=${hall.firstItem.type}&id=${hall.firstItem.id}`
+      url: `/pages/showcase/showcase?hall=${encodeURIComponent(hall.name)}&hallId=${encodeURIComponent(hall.id)}`
     })
   },
 

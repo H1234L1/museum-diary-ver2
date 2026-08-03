@@ -112,6 +112,35 @@ const deleteItem = async (itemId) => {
   return updatedUser
 }
 
+const moveItemsToHall = async (itemIds, targetHall) => {
+  const user = await getUser()
+  if (!user) throw new Error('User not found')
+
+  const ids = new Set(Array.isArray(itemIds) ? itemIds.filter(Boolean) : [])
+  if (!ids.size) throw new Error('No items selected')
+
+  const targetName = String(targetHall && targetHall.name || '').trim()
+  const targetId = String(targetHall && targetHall.id || '').trim()
+  if (!targetName) throw new Error('Target hall is required')
+
+  let movedCount = 0
+  const items = user.items.map((item) => {
+    if (!ids.has(item.id)) return item
+
+    movedCount += 1
+    const movedItem = { ...item, hall: targetName }
+    if (targetId) movedItem.hallId = targetId
+    else delete movedItem.hallId
+    return movedItem
+  })
+
+  if (!movedCount) throw new Error('Items not found')
+
+  const updatedUser = { ...user, items }
+  await saveUser(updatedUser)
+  return { user: updatedUser, movedCount }
+}
+
 const getMonthKey = (date = new Date()) => {
   const value = new Date(date)
   const month = String(value.getMonth() + 1).padStart(2, '0')
@@ -182,6 +211,7 @@ module.exports = {
   addItem,
   createHall,
   deleteItem,
+  moveItemsToHall,
   getMonthKey,
   getItemsForMonth,
   getMonthlyHighlight,

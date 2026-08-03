@@ -33,7 +33,17 @@ Page({
     toast: ''
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    let hall = '主馆'
+    if (options.hall) {
+      try {
+        hall = decodeURIComponent(options.hall)
+      } catch (error) {
+        hall = options.hall
+      }
+    }
+    this.setData({ hall })
+
     if (!wx.getRecorderManager) return
 
     recorderManager = wx.getRecorderManager()
