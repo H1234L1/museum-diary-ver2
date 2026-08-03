@@ -1,7 +1,16 @@
 <view class="private-museum">
   <image class="museum-wall" src="/assets/art/private-wall-bg.jpg" mode="aspectFill"></image>
   <view class="wall-veil"></view>
+  <view class="museum-ceiling">
+    <view class="ceiling-line ceiling-line-left"></view>
+    <view class="ceiling-line ceiling-line-right"></view>
+    <view class="skylight"><view class="skylight-cross"></view></view>
+  </view>
+  <view class="museum-cornice"></view>
+  <view class="room-panel room-panel-left"></view>
+  <view class="room-panel room-panel-right"></view>
   <view class="wall-light"></view>
+  <view class="museum-floor"><view class="floor-seam"></view></view>
 
   <view class="showcase-nav" style="padding-top: {{statusBarHeight}}px;">
     <view class="showcase-nav-row" style="height: {{navigationBarHeight}}px;">
@@ -14,7 +23,7 @@
     class="overview-button"
     style="top: calc({{statusBarHeight}}px + {{navigationBarHeight}}px + 12rpx);"
     bindtap="openOverview"
-  >切换到作品概览</view>
+  >作品概览</view>
 
   <view class="gallery-identity">
     <view class="gallery-name">{{hallName}}</view>
@@ -22,71 +31,69 @@
     <view class="gallery-subtitle">{{hallSubtitle}}</view>
   </view>
 
-  <view
-    wx:if="{{!showingAddSlot}}"
-    class="single-installation installation-{{currentExhibit.type}}"
-    data-id="{{currentExhibit.id}}"
-    data-type="{{currentExhibit.type}}"
-    bindtap="openExhibit"
-  >
-    <view class="installation-aura"></view>
-    <view class="hanging-wire wire-left"></view>
-    <view class="hanging-wire wire-right"></view>
-    <view class="collection-shadow"></view>
-    <view class="frame-backplate"></view>
-    <view class="collection-frame">
-      <view class="frame-bevel">
-        <view class="collection-mat">
-          <image
-            wx:if="{{currentExhibit.type === 'photo' && currentExhibit.image}}"
-            class="photo-preview"
-            src="{{currentExhibit.image}}"
-            mode="aspectFill"
-          ></image>
+  <view wx:if="{{hasItems}}" class="frame-gallery {{transitionClass}}">
+    <view
+      wx:for="{{displayItems}}"
+      wx:key="renderKey"
+      class="gallery-frame frame-{{item.position}} installation-{{item.type}}"
+      data-id="{{item.id}}"
+      data-type="{{item.type}}"
+      bindtap="openExhibit"
+    >
+      <view class="frame-wire wire-left"></view>
+      <view class="frame-wire wire-right"></view>
+      <view class="frame-cast-shadow"></view>
+      <view class="collection-frame">
+        <view class="frame-bevel">
+          <view class="collection-mat">
+            <image
+              wx:if="{{item.type === 'photo' && item.image}}"
+              class="photo-preview"
+              src="{{item.image}}"
+              mode="aspectFill"
+            ></image>
 
-          <view wx:elif="{{currentExhibit.type === 'text'}}" class="text-preview">
-            <view class="scroll-cap scroll-cap-top"></view>
-            <view class="scroll-paper">
-              <view class="scroll-title">{{currentExhibit.title}}</view>
-              <view class="scroll-rule"></view>
-              <view class="scroll-copy">{{currentExhibit.story}}</view>
+            <view wx:elif="{{item.type === 'text'}}" class="text-preview">
+              <view class="scroll-cap scroll-cap-top"></view>
+              <view class="scroll-paper">
+                <view class="scroll-rule"></view>
+                <view class="scroll-copy">{{item.story}}</view>
+              </view>
+              <view class="scroll-cap scroll-cap-bottom"></view>
             </view>
-            <view class="scroll-cap scroll-cap-bottom"></view>
-          </view>
 
-          <view wx:elif="{{currentExhibit.type === 'audio'}}" class="audio-preview">
-            <view class="audio-disc"><view class="audio-center"></view></view>
-            <view class="audio-wave">
-              <text></text><text></text><text></text><text></text><text></text><text></text><text></text>
+            <view wx:elif="{{item.type === 'audio'}}" class="audio-preview">
+              <view class="audio-disc"><view class="audio-center"></view></view>
+              <view class="audio-wave">
+                <text></text><text></text><text></text><text></text><text></text><text></text><text></text>
+              </view>
+              <view class="audio-label">VOICE MEMORY</view>
             </view>
-            <view class="audio-label">VOICE MEMORY</view>
-          </view>
 
-          <view wx:else class="missing-preview">◇</view>
+            <view wx:else class="missing-preview">◇</view>
+          </view>
         </view>
+        <view class="exhibit-number">No. {{item.number}}</view>
       </view>
-      <view class="exhibit-number">No.{{currentExhibit.number}}</view>
     </view>
   </view>
 
   <view wx:else class="empty-installation" bindtap="addExhibit">
-    <view class="installation-aura empty-aura"></view>
-    <view class="collection-shadow empty-shadow"></view>
-    <view class="empty-backplate"></view>
+    <view class="empty-aura"></view>
     <view class="empty-frame">
       <view class="empty-inner">
         <view class="empty-plus-ring"><view class="empty-plus">＋</view></view>
         <view class="empty-copy">{{addSlotTitle}}</view>
         <view class="empty-hint">轻触放入一段人生收藏</view>
       </view>
-      <view class="empty-number">No.{{nextExhibitNumber}}</view>
+      <view class="empty-number">No. {{nextExhibitNumber}}</view>
     </view>
   </view>
 
-  <view class="cycle-button cycle-left {{canCycle ? '' : 'disabled'}}" bindtap="showPrevious">
+  <view wx:if="{{hasItems}}" class="cycle-button cycle-left {{canCycle ? '' : 'disabled'}}" bindtap="showPrevious">
     <view class="cycle-chevron"></view>
   </view>
-  <view class="cycle-button cycle-right {{canCycle ? '' : 'disabled'}}" bindtap="showNext">
+  <view wx:if="{{hasItems}}" class="cycle-button cycle-right {{canCycle ? '' : 'disabled'}}" bindtap="showNext">
     <view class="cycle-chevron"></view>
   </view>
 
