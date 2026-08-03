@@ -260,6 +260,39 @@ Page({
     })
   },
 
+  requestAudioTitle() {
+    return new Promise((resolve) => {
+      const openTitleDialog = () => {
+        wx.showModal({
+          title: '为声音命名',
+          content: '',
+          editable: true,
+          placeholderText: '请输入语音展品标题',
+          cancelText: '取消',
+          confirmText: '确定',
+          success: ({ confirm, content }) => {
+            if (!confirm) {
+              resolve('')
+              return
+            }
+
+            const title = (content || '').trim()
+            if (title) {
+              resolve(title)
+              return
+            }
+
+            wx.showToast({ title: '请先填写标题', icon: 'none' })
+            setTimeout(openTitleDialog, 350)
+          },
+          fail: () => resolve('')
+        })
+      }
+
+      openTitleDialog()
+    })
+  },
+
   async save() {
     if (this.data.recording) {
       this.notice('请先轻触结束录音')
@@ -271,13 +304,21 @@ Page({
       return
     }
 
+    const story = this.data.story.trim()
     const type = this.data.image ? 'photo' : (this.data.audio ? 'audio' : 'text')
+    let title = ''
+
+    if (this.data.audio && !story) {
+      title = await this.requestAudioTitle()
+      if (!title) return
+    }
+
     const record = {
       id: `exhibit-${Date.now()}`,
-      title: this.data.story.trim().slice(0, 16) || `${this.data.date} 的收藏`,
+      title,
       date: this.data.date,
       image: this.data.image,
-      story: this.data.story.trim(),
+      story,
       audio: this.data.audio,
       hall: this.data.hall || '主馆',
       type,
