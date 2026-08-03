@@ -100,6 +100,9 @@ Page({
   onUnload() {
     if (this.audioContext) this.audioContext.destroy()
   },
+  editItem() {
+    this.notice('进入编辑模式')
+  },
   comment() {
     wx.showModal({
       title: '写下留言',

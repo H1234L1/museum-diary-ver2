@@ -28,8 +28,11 @@ Page({
     hallId: '',
     hallSubtitle: 'Life Museum',
     items: [],
+    displayItems: [],
     currentExhibit: null,
     currentIndex: 0,
+    transitionClass: '',
+    isTransitioning: false,
     hasItems: false,
     canCycle: false,
     showingAddSlot: true,
@@ -92,36 +95,107 @@ Page({
   updateDisplay() {
     const { items, currentIndex } = this.data
     const total = items.length
-    const slotCount = total + 1
-    const safeIndex = Math.min(currentIndex, slotCount - 1)
-    const showingAddSlot = safeIndex === total
+    const safeIndex = total ? Math.min(currentIndex, total - 1) : 0
+    const displayItems = []
+
+    if (total === 1) {
+      displayItems.push({ ...items[0], position: 'center', renderKey: items[0].id })
+    } else if (total === 2) {
+      displayItems.push({ ...items[safeIndex], position: 'center', renderKey: items[safeIndex].id })
+      displayItems.push({ ...items[(safeIndex + 1) % total], position: 'right', renderKey: items[(safeIndex + 1) % total].id })
+    } else if (total > 2) {
+      displayItems.push({ ...items[(safeIndex - 1 + total) % total], position: 'left', renderKey: items[(safeIndex - 1 + total) % total].id })
+      displayItems.push({ ...items[safeIndex], position: 'center', renderKey: items[safeIndex].id })
+      displayItems.push({ ...items[(safeIndex + 1) % total], position: 'right', renderKey: items[(safeIndex + 1) % total].id })
+    }
 
     this.setData({
       currentIndex: safeIndex,
-      currentExhibit: showingAddSlot ? null : items[safeIndex],
+      displayItems,
+      currentExhibit: total ? items[safeIndex] : null,
       hasItems: total > 0,
-      canCycle: slotCount > 1,
-      showingAddSlot,
+      canCycle: total > 1,
+      showingAddSlot: total === 0,
       addSlotTitle: total ? '添加下一件收藏' : '收藏第一件展品',
       nextExhibitNumber: String(total + 1).padStart(4, '0'),
-      progressText: showingAddSlot ? '新增展位' : `${safeIndex + 1} / ${total}`
+      progressText: total ? `${safeIndex + 1} / ${total}` : '等待第一件收藏'
     })
   },
 
   showPrevious() {
-    const total = this.data.items.length + 1
-    if (total < 2) return
-    this.setData({
-      currentIndex: (this.data.currentIndex - 1 + total) % total
-    }, () => this.updateDisplay())
+    const total = this.data.items.length
+    if (total < 2 || this.data.isTransitioning) return
+    this.switchExhibit((this.data.currentIndex - 1 + total) % total, 'previous')
   },
 
   showNext() {
-    const total = this.data.items.length + 1
-    if (total < 2) return
+    const total = this.data.items.length
+    if (total < 2 || this.data.isTransitioning) return
+    this.switchExhibit((this.data.currentIndex + 1) % total, 'next')
+  },
+
+  switchExhibit(nextIndex, direction) {
+    const { items, currentIndex } = this.data
+    const total = items.length
+    if (total < 3) {
+      this.setData({ currentIndex: nextIndex }, () => this.updateDisplay())
+      return
+    }
+
+    const previousIndex = (currentIndex - 1 + total) % total
+    const followingIndex = (currentIndex + 1) % total
+    const incomingIndex = direction === 'next'
+      ? (nextIndex + 1) % total
+      : (nextIndex - 1 + total) % total
+    const transitionId = Date.now()
+    let stagedItems
+    let movingItems
+
+    if (direction === 'next') {
+      stagedItems = [
+        { ...items[previousIndex], position: 'left', renderKey: `out-left-${transitionId}` },
+        { ...items[currentIndex], position: 'center', renderKey: items[currentIndex].id },
+        { ...items[followingIndex], position: 'right', renderKey: items[followingIndex].id },
+        { ...items[incomingIndex], position: 'pre-right', renderKey: `in-right-${transitionId}` }
+      ]
+      movingItems = stagedItems.map((item) => {
+        if (item.position === 'left') return { ...item, position: 'exit-left' }
+        if (item.position === 'center') return { ...item, position: 'left' }
+        if (item.position === 'right') return { ...item, position: 'center' }
+        return { ...item, position: 'right' }
+      })
+    } else {
+      stagedItems = [
+        { ...items[previousIndex], position: 'left', renderKey: items[previousIndex].id },
+        { ...items[currentIndex], position: 'center', renderKey: items[currentIndex].id },
+        { ...items[followingIndex], position: 'right', renderKey: `out-right-${transitionId}` },
+        { ...items[incomingIndex], position: 'pre-left', renderKey: `in-left-${transitionId}` }
+      ]
+      movingItems = stagedItems.map((item) => {
+        if (item.position === 'right') return { ...item, position: 'exit-right' }
+        if (item.position === 'center') return { ...item, position: 'right' }
+        if (item.position === 'left') return { ...item, position: 'center' }
+        return { ...item, position: 'left' }
+      })
+    }
+
     this.setData({
-      currentIndex: (this.data.currentIndex + 1) % total
-    }, () => this.updateDisplay())
+      isTransitioning: true,
+      transitionClass: 'gallery-rotating',
+      displayItems: stagedItems
+    }, () => {
+      const start = () => this.setData({ displayItems: movingItems })
+      if (wx.nextTick) wx.nextTick(start)
+      else setTimeout(start, 20)
+    })
+
+    this.transitionTimer = setTimeout(() => {
+      this.setData({
+        currentIndex: nextIndex,
+        transitionClass: '',
+        isTransitioning: false
+      }, () => this.updateDisplay())
+    }, 460)
   },
 
   openExhibit(e) {
@@ -145,5 +219,10 @@ Page({
     wx.navigateBack({
       fail: () => wx.redirectTo({ url: '/pages/gallery/gallery' })
     })
+  },
+
+  onUnload() {
+    if (this.transitionTimer) clearTimeout(this.transitionTimer)
+    if (this.transitionEndTimer) clearTimeout(this.transitionEndTimer)
   }
 })
