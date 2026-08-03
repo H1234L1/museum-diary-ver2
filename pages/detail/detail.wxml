@@ -1,4 +1,4 @@
-<view class="detail-page {{type === 'text' || type === 'audio' ? 'static-detail' : ''}} {{type === 'audio' ? 'audio-detail' : ''}}">
+<view class="detail-page static-detail {{type === 'photo' ? 'photo-detail' : ''}} {{type === 'audio' ? 'audio-detail' : ''}}">
   <view class="detail-nav" style="padding-top: {{statusBarHeight}}px;">
     <view class="detail-nav-row" style="height: {{navigationBarHeight}}px;">
       <view class="back" bindtap="goBack">‹</view>
@@ -8,10 +8,10 @@
   </view>
 
   <view class="gallery-light">
-    <view wx:if="{{type === 'photo'}}" class="photo-exhibit">
+    <view wx:if="{{type === 'photo'}}" class="photo-exhibit" style="height: {{textGalleryHeight}}px;">
       <view class="gallery-ceiling"></view>
       <view class="spotlight-fixture"><view class="spotlight-rim"></view><view class="spotlight-bulb"></view></view>
-      <view class="spotlight-beam"></view>
+      <view class="spotlight-beam photo-beam"></view>
 
       <view class="photo-scene-content">
         <view class="exhibit-number">No. {{exhibitNumber}}</view>
@@ -26,14 +26,10 @@
           </view>
         </view>
 
-        <view class="detail-placard">
-          <view class="placard-inner">
-            <view class="exhibit-title">{{record && record.title ? record.title : '未命名展品'}}</view>
-            <view wx:if="{{record && record.date}}" class="exhibit-date">{{displayDate}} 入藏</view>
-            <view class="tiny-ornament">— ◇ —</view>
-            <view wx:if="{{record && record.story}}" class="exhibit-description">{{record.story}}</view>
-            <view class="hall-link">所属展厅 <text>{{record && record.hall ? record.hall : '主馆'}}　›</text></view>
-          </view>
+        <view class="description-card photo-card">
+          <view wx:if="{{record && record.date}}" class="exhibit-date">{{displayDate}} 入藏</view>
+          <view wx:if="{{record && record.story}}" class="exhibit-description">{{record.story}}</view>
+          <view class="hall-link">所属展厅 <text>{{record && record.hall ? record.hall : '主馆'}}　›</text></view>
         </view>
       </view>
     </view>
