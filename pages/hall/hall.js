@@ -61,10 +61,20 @@ Page({
     filters: ['全部', '图片', '文字', '语音'],
     statusBarHeight: 20,
     navigationBarHeight: 44,
+    hallName: '主馆',
     groups: []
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    let hallName = '主馆'
+    if (options.hall) {
+      try {
+        hallName = decodeURIComponent(options.hall)
+      } catch (error) {
+        hallName = options.hall
+      }
+    }
+
     const windowInfo = wx.getWindowInfo
       ? wx.getWindowInfo()
       : wx.getSystemInfoSync()
@@ -80,7 +90,8 @@ Page({
 
     this.setData({
       statusBarHeight,
-      navigationBarHeight: Math.max(40, navigationBarHeight)
+      navigationBarHeight: Math.max(40, navigationBarHeight),
+      hallName
     })
   },
 
@@ -91,9 +102,9 @@ Page({
       return
     }
 
-    this.setData({
-      groups: groupItems(user.items)
-    })
+    const hallName = this.data.hallName || '主馆'
+    const hallItems = user.items.filter((item) => (item.hall || '主馆') === hallName)
+    this.setData({ groups: groupItems(hallItems) })
   },
 
   goBack() {

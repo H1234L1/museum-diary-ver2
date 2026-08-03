@@ -8,6 +8,9 @@ const today = formatDate(new Date())
 const { getUser, addItem } = require('../../services/user-service')
 
 let recorderManager = null
+let voicePressActive = false
+let voiceStartY = 0
+let discardNextRecording = false
 
 Page({
   data: {
@@ -17,10 +20,16 @@ Page({
     image: '',
     story: '',
     hall: '主馆',
+    voiceMode: false,
     recording: false,
+    cancelling: false,
     audio: '',
-    voiceState: '轻触开始录音',
-    waveBars: Array.from({ length: 16 }, (_, index) => index),
+    textBoxHeight: 41,
+    textBoxMinHeight: 41,
+    textBoxMaxHeight: 180,
+    textLineHeight: 22,
+    voiceButtonText: '按住 说话',
+    keyboardKeys: Array.from({ length: 12 }, (_, index) => index),
     toast: ''
   },
 
@@ -29,21 +38,48 @@ Page({
 
     recorderManager = wx.getRecorderManager()
     this.handleRecorderStart = () => {
-      this.setData({ recording: true, voiceState: '录音中 · 轻触结束' })
+      this.setData({
+        recording: true,
+        voiceButtonText: voicePressActive ? '松开 结束' : '正在结束…'
+      })
+
+      if (!voicePressActive) {
+        discardNextRecording = true
+        recorderManager.stop()
+      }
     }
     this.handleRecorderStop = ({ tempFilePath }) => {
+      if (discardNextRecording) {
+        discardNextRecording = false
+        this.setData({
+          recording: false,
+          cancelling: false,
+          voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
+        })
+        return
+      }
+
       this.persistFile(tempFilePath, (audio) => {
-        this.setData({ recording: false, audio, voiceState: '已录好 · 轻触重录' })
+        this.setData({
+          recording: false,
+          cancelling: false,
+          audio,
+          voiceButtonText: '已录好 · 按住重录'
+        })
       })
     }
     this.handleRecorderError = () => {
-      this.setData({ recording: false, voiceState: '轻触重新录音' })
+      this.setData({ recording: false, cancelling: false, voiceButtonText: '按住 说话' })
       this.notice('录音没有成功，请检查麦克风权限')
     }
 
     recorderManager.onStart(this.handleRecorderStart)
     recorderManager.onStop(this.handleRecorderStop)
     recorderManager.onError(this.handleRecorderError)
+  },
+
+  onReady() {
+    this.calculateTextBoxLimit()
   },
 
   onUnload() {
@@ -76,14 +112,66 @@ Page({
     })
   },
 
-  toggleRecord() {
-    if (!recorderManager) {
-      this.notice('当前微信版本暂不支持录音')
+  toggleVoiceMode() {
+    if (this.data.recording) return
+    this.setData({
+      voiceMode: !this.data.voiceMode,
+      cancelling: false,
+      voiceButtonText: this.data.audio ? '已录好 · 按住重录' : '按住 说话'
+    })
+  },
+
+  startVoicePress(e) {
+    if (!recorderManager || this.data.recording) {
+      if (!recorderManager) this.notice('当前微信版本暂不支持录音')
       return
     }
 
-    if (this.data.recording) {
+    voicePressActive = true
+    discardNextRecording = false
+    voiceStartY = e.touches && e.touches[0] ? e.touches[0].clientY : 0
+    this.setData({ cancelling: false, voiceButtonText: '松开 结束' })
+    this.beginRecording()
+  },
+
+  moveVoicePress(e) {
+    if (!voicePressActive) return
+    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : voiceStartY
+    const cancelling = voiceStartY - currentY > 70
+    if (cancelling === this.data.cancelling) return
+    this.setData({
+      cancelling,
+      voiceButtonText: cancelling ? '松开 取消' : '松开 结束'
+    })
+  },
+
+  endVoicePress() {
+    if (!voicePressActive) return
+    voicePressActive = false
+    discardNextRecording = this.data.cancelling
+
+    if (this.data.recording && recorderManager) {
       recorderManager.stop()
+      return
+    }
+
+    this.setData({
+      cancelling: false,
+      voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
+    })
+  },
+
+  cancelVoicePress() {
+    if (!voicePressActive) return
+    voicePressActive = false
+    discardNextRecording = true
+    if (this.data.recording && recorderManager) recorderManager.stop()
+    this.setData({ cancelling: false, voiceButtonText: '按住 说话' })
+  },
+
+  beginRecording() {
+    if (!recorderManager) {
+      this.notice('当前微信版本暂不支持录音')
       return
     }
 
@@ -97,6 +185,8 @@ Page({
         format: 'mp3'
       }),
       fail: () => {
+        voicePressActive = false
+        this.setData({ cancelling: false, voiceButtonText: '按住 说话' })
         wx.showModal({
           title: '需要麦克风权限',
           content: '开启麦克风权限后，才可以把声音收藏进博物馆。',
@@ -109,8 +199,52 @@ Page({
     })
   },
 
+  openDrafts() {
+    this.notice('草稿箱将在保存草稿后显示内容')
+  },
+
   setStory(e) {
     this.setData({ story: e.detail.value })
+  },
+
+  calculateTextBoxLimit() {
+    const windowInfo = wx.getWindowInfo
+      ? wx.getWindowInfo()
+      : wx.getSystemInfoSync()
+    const rpxToPx = windowInfo.windowWidth / 750
+
+    wx.createSelectorQuery()
+      .select('.composer')
+      .boundingClientRect((rect) => {
+        if (!rect) return
+
+        const navigationHeight = 120 * rpxToPx
+        const contentBelowComposer = 235 * rpxToPx
+        const availableHeight = windowInfo.windowHeight
+          - rect.top
+          - navigationHeight
+          - contentBelowComposer
+        const minimumHeight = 82 * rpxToPx
+        const maximumHeight = Math.max(minimumHeight, availableHeight)
+
+        this.setData({
+          textBoxHeight: minimumHeight,
+          textBoxMinHeight: minimumHeight,
+          textBoxMaxHeight: maximumHeight,
+          textLineHeight: 44 * rpxToPx
+        })
+      })
+      .exec()
+  },
+
+  resizeStoryInput(e) {
+    const lineCount = Math.max(1, Number(e.detail.lineCount) || 1)
+    const desiredHeight = this.data.textBoxMinHeight
+      + (lineCount - 1) * this.data.textLineHeight
+    const textBoxHeight = Math.min(this.data.textBoxMaxHeight, desiredHeight)
+
+    if (Math.abs(textBoxHeight - this.data.textBoxHeight) < 1) return
+    this.setData({ textBoxHeight })
   },
 
   persistFile(tempFilePath, done) {
@@ -145,7 +279,7 @@ Page({
       image: this.data.image,
       story: this.data.story.trim(),
       audio: this.data.audio,
-      hall: '主馆',
+      hall: this.data.hall || '主馆',
       type,
       createdAt: Date.now()
     }
@@ -162,9 +296,12 @@ Page({
       return
     }
 
-    wx.showToast({ title: '已收藏到主馆', icon: 'success' })
+    const destinationHall = record.hall || '主馆'
+    wx.showToast({ title: `已收藏到${destinationHall}`, icon: 'success' })
     setTimeout(() => {
-      wx.redirectTo({ url: `/pages/detail/detail?type=${type}&id=${record.id}` })
+      wx.redirectTo({
+        url: `/pages/detail/detail?type=${type}&id=${record.id}&from=record&hall=${encodeURIComponent(destinationHall)}`
+      })
     }, 700)
   },
 

@@ -2,7 +2,7 @@
   <view class="hall-header" style="padding-top: {{statusBarHeight}}px;">
     <view class="header-row" style="height: {{navigationBarHeight}}px;">
       <view class="back" bindtap="goBack">‹</view>
-      <view class="header-title">主馆</view>
+      <view class="header-title">{{hallName}}</view>
       <view class="header-more">•••</view>
     </view>
   </view>
