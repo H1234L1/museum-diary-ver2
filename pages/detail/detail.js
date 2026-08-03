@@ -9,6 +9,8 @@ Page({
     statusBarHeight: 20,
     navigationBarHeight: 44,
     textGalleryHeight: 600,
+    openedFromRecord: false,
+    returnHall: '主馆',
     playing: false,
     deleting: false,
     toast: ''
@@ -50,7 +52,14 @@ Page({
       ? String(user.items.length - recordIndex).padStart(4, '0')
       : '----'
 
-    this.setData({ type, record, displayDate, exhibitNumber })
+    this.setData({
+      type,
+      record,
+      displayDate,
+      exhibitNumber,
+      openedFromRecord: options.from === 'record',
+      returnHall: (record && record.hall) || options.hall || '主馆'
+    })
 
     if (record && record.audio && wx.createInnerAudioContext) {
       this.audioContext = wx.createInnerAudioContext()
@@ -62,7 +71,20 @@ Page({
       })
     }
   },
-  goBack() { wx.navigateBack() },
+  goBack() {
+    if (this.data.openedFromRecord) {
+      wx.redirectTo({
+        url: `/pages/hall/hall?hall=${encodeURIComponent(this.data.returnHall || '主馆')}`
+      })
+      return
+    }
+
+    wx.navigateBack({
+      fail: () => wx.redirectTo({
+        url: `/pages/hall/hall?hall=${encodeURIComponent(this.data.returnHall || '主馆')}`
+      })
+    })
+  },
   toggleAudio() {
     const playing = !this.data.playing
     this.setData({ playing })
