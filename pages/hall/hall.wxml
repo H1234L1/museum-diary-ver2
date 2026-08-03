@@ -1,9 +1,12 @@
 <view class="hall-page">
-  <view class="hall-header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="hall-header" style="padding-top: calc({{statusBarHeight}}px + 18rpx);">
     <view class="header-row" style="height: {{navigationBarHeight}}px;">
       <view class="back" bindtap="goBack">‹</view>
       <view class="header-title">{{hallName}}</view>
-      <view class="header-more">•••</view>
+      <view class="header-spacer"></view>
+    </view>
+    <view class="overview-switch-row">
+      <view class="overview-switch" bindtap="openShowcase">切换到博物馆陈列</view>
     </view>
   </view>
 
@@ -19,16 +22,18 @@
 
   <view class="tools-row">
     <text>全部馆藏</text>
-    <view>
+    <view class="tools-actions">
       <text class="tool" bindtap="openSearch">⌕</text>
-      <text class="tool" bindtap="openSort">☷</text>
-      <text class="tool active-grid">▦</text>
+      <view class="move-trigger {{selecting ? 'active' : ''}}" bindtap="toggleSelectionMode">
+        <view class="move-glyph"><view class="move-box"></view><view class="move-arrow"></view></view>
+        <text>{{selecting ? '取消' : '移馆'}}</text>
+      </view>
     </view>
   </view>
 
   <view wx:if="{{groups.length === 0}}" class="empty-hall">
     <view class="empty-mark">◇</view>
-    <view class="empty-title">主馆还没有展品</view>
+    <view class="empty-title">{{hallName}}还没有展品</view>
     <view class="empty-copy">收藏你的第一个人生片刻，它会出现在这里。</view>
     <navigator class="empty-button" url="/pages/record/record?new=1" open-type="redirect">收藏一件展品</navigator>
   </view>
@@ -39,14 +44,19 @@
       <text>{{item.count}} 件</text>
     </view>
     <view class="exhibit-grid">
-      <navigator
+      <view
         wx:for="{{item.items}}"
         wx:for-item="exhibit"
         wx:key="id"
         wx:if="{{activeFilter === '全部' || activeFilter === exhibit.category}}"
-        class="exhibit-tile tile-{{exhibit.type}}"
-        url="/pages/detail/detail?type={{exhibit.type}}&id={{exhibit.id}}"
+        class="exhibit-tile tile-{{exhibit.type}} {{selectedMap[exhibit.id] ? 'selected' : ''}}"
+        data-id="{{exhibit.id}}"
+        data-type="{{exhibit.type}}"
+        bindtap="handleExhibitTap"
       >
+        <view wx:if="{{selecting}}" class="selection-marker {{selectedMap[exhibit.id] ? 'checked' : ''}}">
+          {{selectedMap[exhibit.id] ? '✓' : ''}}
+        </view>
         <block wx:if="{{exhibit.type === 'photo'}}">
           <image src="{{exhibit.image}}" mode="aspectFill"></image>
           <view class="photo-shade"></view>
@@ -67,10 +77,38 @@
           </view>
           <view class="audio-duration">{{exhibit.duration}}</view>
         </block>
-      </navigator>
+      </view>
     </view>
   </view>
 
   <view class="hall-bottom-space"></view>
+
+  <view wx:if="{{selecting}}" class="selection-dock">
+    <view class="selection-summary">已选 <text>{{selectedCount}}</text> 件</view>
+    <button class="move-button {{selectedCount ? 'ready' : ''}}" bindtap="openMoveTargets">移动到其他博物馆</button>
+  </view>
+
   <museum-nav active="gallery"></museum-nav>
+
+  <view wx:if="{{targetSheetVisible}}" class="move-mask" bindtap="closeTargetSheet">
+    <view class="move-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="move-sheet-title">移动到其他博物馆</view>
+      <view class="move-sheet-copy">选择这 {{selectedCount}} 件展品的新归属</view>
+      <scroll-view class="target-list" scroll-y="{{true}}" show-scrollbar="{{false}}">
+        <view
+          wx:for="{{moveTargets}}"
+          wx:key="name"
+          class="target-row"
+          data-index="{{index}}"
+          bindtap="confirmMove"
+        >
+          <view class="target-mark">馆</view>
+          <view class="target-name">{{item.name}}</view>
+          <view class="target-arrow">›</view>
+        </view>
+      </scroll-view>
+      <button class="sheet-cancel" bindtap="closeTargetSheet" disabled="{{moving}}">取消</button>
+    </view>
+  </view>
 </view>

@@ -1,4 +1,4 @@
-const { getUser } = require('../../services/user-service')
+const { getUser, moveItemsToHall } = require('../../services/user-service')
 
 const TYPE_LABELS = {
   photo: '图片',
@@ -62,7 +62,15 @@ Page({
     statusBarHeight: 20,
     navigationBarHeight: 44,
     hallName: '主馆',
-    groups: []
+    hallId: '',
+    groups: [],
+    selecting: false,
+    selectedIds: [],
+    selectedMap: {},
+    selectedCount: 0,
+    moveTargets: [],
+    targetSheetVisible: false,
+    moving: false
   },
 
   onLoad(options = {}) {
@@ -91,11 +99,16 @@ Page({
     this.setData({
       statusBarHeight,
       navigationBarHeight: Math.max(40, navigationBarHeight),
-      hallName
+      hallName,
+      hallId: options.hallId ? decodeURIComponent(options.hallId) : ''
     })
   },
 
   async onShow() {
+    await this.loadHall()
+  },
+
+  async loadHall() {
     const user = await getUser()
     if (!user) {
       wx.reLaunch({ url: '/pages/onboarding/onboarding' })
@@ -103,14 +116,31 @@ Page({
     }
 
     const hallName = this.data.hallName || '主馆'
-    const hallItems = user.items.filter((item) => (item.hall || '主馆') === hallName)
-    this.setData({ groups: groupItems(hallItems) })
+    const hallId = this.data.hallId
+    const hallItems = user.items.filter((item) => (
+      (hallId && item.hallId === hallId) || (item.hall || '主馆') === hallName
+    ))
+    const moveTargets = [
+      { id: '', name: '主馆' },
+      ...user.halls.map((hall) => ({ id: hall.id, name: hall.name }))
+    ].filter((hall) => {
+      if (hallId && hall.id) return hall.id !== hallId
+      return hall.name !== hallName
+    })
+
+    this.setData({ groups: groupItems(hallItems), moveTargets })
   },
 
   goBack() {
     wx.navigateBack({
       fail: () => wx.redirectTo({ url: '/pages/gallery/gallery' })
     })
+  },
+
+  openShowcase() {
+    const hallName = encodeURIComponent(this.data.hallName || '主馆')
+    const hallId = this.data.hallId ? `&hallId=${encodeURIComponent(this.data.hallId)}` : ''
+    wx.redirectTo({ url: `/pages/showcase/showcase?hall=${hallName}${hallId}` })
   },
 
   selectFilter(e) {
@@ -126,9 +156,78 @@ Page({
     })
   },
 
-  openSort() {
-    wx.showActionSheet({
-      itemList: ['按入藏时间排序', '按展品类型排序', '按标题排序']
+  toggleSelectionMode() {
+    const selecting = !this.data.selecting
+    this.setData({
+      selecting,
+      selectedIds: [],
+      selectedMap: {},
+      selectedCount: 0,
+      targetSheetVisible: false
     })
+  },
+
+  handleExhibitTap(e) {
+    const { id, type } = e.currentTarget.dataset
+    if (!id) return
+
+    if (!this.data.selecting) {
+      wx.navigateTo({ url: `/pages/detail/detail?type=${type || 'text'}&id=${id}` })
+      return
+    }
+
+    const selectedMap = { ...this.data.selectedMap }
+    if (selectedMap[id]) delete selectedMap[id]
+    else selectedMap[id] = true
+    const selectedIds = Object.keys(selectedMap)
+    this.setData({ selectedMap, selectedIds, selectedCount: selectedIds.length })
+  },
+
+  openMoveTargets() {
+    if (!this.data.selectedCount) {
+      wx.showToast({ title: '请先选择展品', icon: 'none' })
+      return
+    }
+    if (!this.data.moveTargets.length) {
+      wx.showModal({
+        title: '还没有其他展馆',
+        content: '请先创建一个副馆，再移动展品。',
+        showCancel: false,
+        confirmText: '知道了'
+      })
+      return
+    }
+    this.setData({ targetSheetVisible: true })
+  },
+
+  closeTargetSheet() {
+    if (this.data.moving) return
+    this.setData({ targetSheetVisible: false })
+  },
+
+  noop() {},
+
+  async confirmMove(e) {
+    if (this.data.moving) return
+    const target = this.data.moveTargets[e.currentTarget.dataset.index]
+    if (!target) return
+
+    this.setData({ moving: true })
+    try {
+      const result = await moveItemsToHall(this.data.selectedIds, target)
+      this.setData({
+        moving: false,
+        selecting: false,
+        selectedIds: [],
+        selectedMap: {},
+        selectedCount: 0,
+        targetSheetVisible: false
+      })
+      await this.loadHall()
+      wx.showToast({ title: `已移动 ${result.movedCount} 件`, icon: 'success' })
+    } catch (error) {
+      this.setData({ moving: false })
+      wx.showToast({ title: '移动失败，请重试', icon: 'none' })
+    }
   }
 })

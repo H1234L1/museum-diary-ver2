@@ -33,141 +33,16 @@ Page({
     toast: ''
   },
 
-  onLoad() {
-    if (!wx.getRecorderManager) return
-
-    recorderManager = wx.getRecorderManager()
-    this.handleRecorderStart = () => {
-      this.setData({
-        recording: true,
-        voiceButtonText: voicePressActive ? '松开 结束' : '正在结束…'
-      })
-
-      if (!voicePressActive) {
-        discardNextRecording = true
-        recorderManager.stop()
+  onLoad(options = {}) {
+    let hall = '主馆'
+    if (options.hall) {
+      try {
+        hall = decodeURIComponent(options.hall)
+      } catch (error) {
+        hall = options.hall
       }
     }
-    this.handleRecorderStop = ({ tempFilePath }) => {
-      if (discardNextRecording) {
-        discardNextRecording = false
-        this.setData({
-          recording: false,
-          cancelling: false,
-          voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
-        })
-        return
-      }
-
-      this.persistFile(tempFilePath, (audio) => {
-        this.setData({
-          recording: false,
-          cancelling: false,
-          audio,
-          voiceButtonText: '已录好 · 按住重录'
-        })
-      })
-    }
-    this.handleRecorderError = () => {
-      this.setData({ recording: false, cancelling: false, voiceButtonText: '按住 说话' })
-      this.notice('录音没有成功，请检查麦克风权限')
-    }
-
-    recorderManager.onStart(this.handleRecorderStart)
-    recorderManager.onStop(this.handleRecorderStop)
-    recorderManager.onError(this.handleRecorderError)
-  },
-
-  onReady() {
-    this.calculateTextBoxLimit()
-  },
-
-  onUnload() {
-    if (this.data.recording && recorderManager) recorderManager.stop()
-    if (!recorderManager) return
-
-    if (recorderManager.offStart) recorderManager.offStart(this.handleRecorderStart)
-    if (recorderManager.offStop) recorderManager.offStop(this.handleRecorderStop)
-    if (recorderManager.offError) recorderManager.offError(this.handleRecorderError)
-    recorderManager = null
-  },
-
-  changeDate(e) {
-    const date = e.detail.value
-    this.setData({
-      date,
-      dateText: formatDateText(date),
-      day: date.slice(-2)
-    })
-  },
-
-  chooseImage() {
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
-      success: ({ tempFiles }) => {
-        this.persistFile(tempFiles[0].tempFilePath, (image) => this.setData({ image }))
-      }
-    })
-  },
-
-  toggleVoiceMode() {
-    if (this.data.recording) return
-    this.setData({
-      voiceMode: !this.data.voiceMode,
-      cancelling: false,
-      voiceButtonText: this.data.audio ? '已录好 · 按住重录' : '按住 说话'
-    })
-  },
-
-  startVoicePress(e) {
-    if (!recorderManager || this.data.recording) {
-      if (!recorderManager) this.notice('当前微信版本暂不支持录音')
-      return
-    }
-
-    voicePressActive = true
-    discardNextRecording = false
-    voiceStartY = e.touches && e.touches[0] ? e.touches[0].clientY : 0
-    this.setData({ cancelling: false, voiceButtonText: '松开 结束' })
-    this.beginRecording()
-  },
-
-  moveVoicePress(e) {
-    if (!voicePressActive) return
-    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : voiceStartY
-    const cancelling = voiceStartY - currentY > 70
-    if (cancelling === this.data.cancelling) return
-    this.setData({
-      cancelling,
-      voiceButtonText: cancelling ? '松开 取消' : '松开 结束'
-    })
-  },
-
-  endVoicePress() {
-    if (!voicePressActive) return
-    voicePressActive = false
-    discardNextRecording = this.data.cancelling
-
-    if (this.data.recording && recorderManager) {
-      recorderManager.stop()
-      return
-    }
-
-    this.setData({
-      cancelling: false,
-      voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
-    })
-  },
-
-  cancelVoicePress() {
-    if (!voicePressActive) return
-    voicePressActive = false
-    discardNextRecording = true
-    if (this.data.recording && recorderManager) recorderManager.stop()
-    this.setData({ cancelling: false, voiceButtonText: '按住 说话' })
-  },
+    this.setData({ hall })
 
   beginRecording() {
     if (!recorderManager) {

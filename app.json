@@ -3,6 +3,7 @@
     "pages/onboarding/onboarding",
     "pages/index/index",
     "pages/gallery/gallery",
+    "pages/showcase/showcase",
     "pages/hall/hall",
     "pages/summary/summary",
     "pages/report/report",
