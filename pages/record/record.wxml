@@ -71,7 +71,7 @@
   <view class="save-note">内容将默认收藏到「主馆」</view>
 
   <view class="bottom-space"></view>
-  <museum-guide bind:action="handleTutorialAction"></museum-guide>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="record"></museum-nav>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 </view>

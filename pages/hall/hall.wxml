@@ -89,6 +89,7 @@
   </view>
 
   <museum-nav active="gallery"></museum-nav>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
 
   <view wx:if="{{targetSheetVisible}}" class="move-mask" bindtap="closeTargetSheet">
     <view class="move-sheet" catchtap="noop">

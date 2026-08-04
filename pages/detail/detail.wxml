@@ -97,5 +97,6 @@
     <view class="action-button" bindtap="comment"><view class="action-icon">○</view><text>留言</text></view>
     <button open-type="share"><view class="action-icon share-action-icon"><view class="share-arrow-shaft"></view><view class="share-arrow-head"></view></view><text>分享</text></button>
   </view>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 </view>

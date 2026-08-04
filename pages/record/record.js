@@ -32,6 +32,7 @@ Page({
     textLineHeight: 22,
     voiceButtonText: '按住 说话',
     keyboardKeys: Array.from({ length: 12 }, (_, index) => index),
+    tutorialTextCompleted: false,
     toast: ''
   },
 
@@ -120,8 +121,12 @@ Page({
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: ({ tempFiles }) => {
-        this.persistFile(tempFiles[0].tempFilePath, (image) => this.setData({ image }))
-      }
+        this.persistFile(tempFiles[0].tempFilePath, (image) => {
+          this.setData({ image })
+          this.completeGuideStep('add-first-photo')
+        })
+      },
+      fail: () => this.refreshGuide()
     })
   },
 
@@ -217,16 +222,38 @@ Page({
   },
 
   setStory(e) {
-    this.setData({ story: e.detail.value })
+    const story = e.detail.value
+    this.setData({ story })
+    if (story.trim() && !this.data.tutorialTextCompleted) {
+      this.setData({ tutorialTextCompleted: true })
+      this.completeGuideStep('write-first-text')
+    }
   },
 
   handleStoryBlur() {
     this.setData({ storyFocused: false })
+    if (!this.data.story.trim()) this.refreshGuide()
   },
 
   handleTutorialAction(e) {
-    if (e.detail.stepId !== 'learn-recording') return
-    this.setData({ voiceMode: false, storyFocused: true })
+    const { stepId } = e.detail
+    if (stepId === 'add-first-photo') {
+      this.chooseImage()
+    } else if (stepId === 'write-first-text') {
+      this.setData({ voiceMode: false, storyFocused: true })
+    } else if (stepId === 'save-first-exhibit') {
+      this.save()
+    }
+  },
+
+  completeGuideStep(stepId) {
+    const guide = this.selectComponent && this.selectComponent('#museumGuide')
+    return guide && guide.completeStep ? guide.completeStep(stepId) : Promise.resolve(false)
+  },
+
+  refreshGuide() {
+    const guide = this.selectComponent && this.selectComponent('#museumGuide')
+    if (guide && guide.syncGuide) guide.syncGuide()
   },
 
   calculateTextBoxLimit() {
@@ -359,6 +386,8 @@ Page({
       this.notice('保存失败，请稍后再试')
       return
     }
+
+    await this.completeGuideStep('save-first-exhibit')
 
     const destinationHall = record.hall || '主馆'
     wx.showToast({ title: `已收藏到${destinationHall}`, icon: 'success' })

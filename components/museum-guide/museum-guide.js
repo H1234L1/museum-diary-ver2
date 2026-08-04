@@ -1,6 +1,7 @@
 const { TUTORIAL_STEPS } = require('../../config/tutorial-steps')
 const {
   getTutorialState,
+  startTutorial,
   advanceTutorial,
   skipTutorial,
   completeTutorial
@@ -19,6 +20,7 @@ const getCurrentRoute = () => {
 Component({
   data: {
     visible: false,
+    offerVisible: false,
     moving: false,
     focusing: false,
     step: {},
@@ -39,6 +41,8 @@ Component({
     },
     detached() {
       if (this.focusTimer) clearTimeout(this.focusTimer)
+      if (this.autoFocusTimer) clearTimeout(this.autoFocusTimer)
+      if (this.resyncTimer) clearTimeout(this.resyncTimer)
     }
   },
 
@@ -51,25 +55,54 @@ Component({
   methods: {
     async syncGuide() {
       try {
+        if (this.autoFocusTimer) clearTimeout(this.autoFocusTimer)
         const state = await getTutorialState()
         const step = TUTORIAL_STEPS[state.stepIndex]
+        const offerVisible = state.status === 'offered' && getCurrentRoute() === 'pages/index/index'
         const visible = state.status === 'active' && step && step.route === getCurrentRoute()
         this.setData({
+          offerVisible,
           visible,
           moving: false,
           focusing: false,
           step: visible ? step : {},
           stepNumber: state.stepIndex + 1
         })
+        if (visible) {
+          this.autoFocusTimer = setTimeout(() => {
+            if (this.data.visible && !this.data.focusing) {
+              this.setData({ moving: true })
+              this.locateTarget(0)
+            }
+          }, 80)
+        }
       } catch (error) {
-        this.setData({ visible: false, moving: false, focusing: false })
+        this.setData({ offerVisible: false, visible: false, moving: false, focusing: false })
       }
     },
 
-    next() {
-      if (this.data.moving || !this.data.step.id) return
+    async acceptTutorial() {
+      if (this.data.moving) return
       this.setData({ moving: true })
-      this.locateTarget(0)
+      try {
+        await startTutorial()
+        await this.syncGuide()
+      } catch (error) {
+        this.setData({ moving: false })
+        wx.showToast({ title: '暂时无法开启引导', icon: 'none' })
+      }
+    },
+
+    async declineTutorial() {
+      if (this.data.moving) return
+      this.setData({ moving: true })
+      try {
+        await skipTutorial()
+        this.setData({ offerVisible: false, visible: false, moving: false })
+      } catch (error) {
+        this.setData({ moving: false })
+        wx.showToast({ title: '操作失败，请重试', icon: 'none' })
+      }
     },
 
     locateTarget(attempt) {
@@ -80,11 +113,19 @@ Component({
         return
       }
 
+      let queryScope = currentPage
+      if (step.targetComponent && currentPage.selectComponent) {
+        queryScope = currentPage.selectComponent(step.targetComponent) || currentPage
+      }
       const query = wx.createSelectorQuery()
-      if (query.in) query.in(currentPage)
+      if (query.in) query.in(queryScope)
       query.select(step.targetSelector).boundingClientRect((rect) => {
         if (!rect) {
-          this.focusFailed()
+          if (attempt < 4) {
+            this.focusTimer = setTimeout(() => this.locateTarget(attempt + 1), 220)
+          } else {
+            this.focusFailed()
+          }
           return
         }
 
@@ -154,13 +195,35 @@ Component({
 
       try {
         const step = this.data.step
+        if (step.deferAdvance) {
+          this.setData({ visible: false, moving: false, focusing: false })
+          this.triggerEvent('action', { stepId: step.id })
+          return
+        }
         if (step.final) await completeTutorial()
         else await advanceTutorial()
         this.setData({ visible: false, moving: false, focusing: false })
         this.triggerEvent('action', { stepId: step.id })
+        if (!step.final) {
+          this.resyncTimer = setTimeout(() => this.syncGuide(), 420)
+        }
       } catch (error) {
         this.setData({ moving: false })
         wx.showToast({ title: '引导暂时无法继续', icon: 'none' })
+      }
+    },
+
+    async completeStep(stepId) {
+      try {
+        const state = await getTutorialState()
+        const step = TUTORIAL_STEPS[state.stepIndex]
+        if (state.status !== 'active' || !step || step.id !== stepId) return false
+        if (step.final) await completeTutorial()
+        else await advanceTutorial()
+        await this.syncGuide()
+        return true
+      } catch (error) {
+        return false
       }
     },
 

@@ -50,8 +50,8 @@
   </view>
 
   <view class="gallery-bottom-space"></view>
-  <museum-guide bind:action="handleTutorialAction"></museum-guide>
-  <museum-nav active="gallery"></museum-nav>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
+  <museum-nav id="museumNav" active="gallery"></museum-nav>
 
   <view wx:if="{{creatorVisible}}" class="creator-mask" bindtap="closeCreator">
     <view class="creator-sheet" catchtap="noop">
