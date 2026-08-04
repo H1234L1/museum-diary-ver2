@@ -46,8 +46,13 @@
       <view class="collection-frame">
         <view class="frame-bevel">
           <view class="collection-mat">
+            <view wx:if="{{item.isAdd}}" class="add-preview">
+              <view class="add-plus">＋</view>
+              <view class="add-preview-title">{{item.title}}</view>
+            </view>
+
             <image
-              wx:if="{{item.type === 'photo' && item.image}}"
+              wx:elif="{{item.type === 'photo' && item.image}}"
               class="photo-preview"
               src="{{item.image}}"
               mode="aspectFill"

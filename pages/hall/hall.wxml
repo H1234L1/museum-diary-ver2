@@ -108,7 +108,69 @@
           <view class="target-arrow">›</view>
         </view>
       </scroll-view>
+      <view class="create-target-row" bindtap="createHallAndMove">
+        <view class="create-target-plus">＋</view>
+        <view class="create-target-copy">
+          <view>新建副馆</view>
+        </view>
+        <view class="target-arrow">›</view>
+      </view>
       <button class="sheet-cancel" bindtap="closeTargetSheet" disabled="{{moving}}">取消</button>
+    </view>
+  </view>
+
+  <view wx:if="{{creatorVisible}}" class="creator-mask" bindtap="closeCreator">
+    <view class="creator-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="creator-heading">
+        <view>
+          <view class="creator-kicker">NEW GALLERY</view>
+          <view class="creator-title">创建一间副馆</view>
+        </view>
+        <view class="creator-close" bindtap="closeCreator">×</view>
+      </view>
+      <view class="creator-note">为所选展品创建一个新的归属。</view>
+
+      <view class="field-label">副馆名称 <text>必填</text></view>
+      <input
+        class="hall-input"
+        value="{{newHallName}}"
+        maxlength="12"
+        placeholder="例如：夏日碎片"
+        bindinput="updateNewHallName"
+      />
+
+      <view class="field-label">一句简介 <text>选填</text></view>
+      <input
+        class="hall-input"
+        value="{{newHallDescription}}"
+        maxlength="24"
+        placeholder="这间展厅收藏着什么？"
+        bindinput="updateNewHallDescription"
+      />
+
+      <view class="field-label cover-label">选择封面 <text>选填</text></view>
+      <scroll-view class="cover-list" scroll-x="{{true}}" show-scrollbar="{{false}}">
+        <view class="cover-row">
+          <view class="cover-choice default-choice {{!selectedCover ? 'selected' : ''}}" bindtap="chooseDefaultCover">
+            <view class="small-arch"></view><text>默认</text>
+          </view>
+          <view
+            wx:for="{{coverOptions}}"
+            wx:key="*this"
+            class="cover-choice {{selectedCover === item ? 'selected' : ''}}"
+            data-image="{{item}}"
+            bindtap="chooseCover"
+          >
+            <image src="{{item}}" mode="aspectFill"></image>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="creator-actions">
+        <button class="cancel-button" bindtap="closeCreator">取消</button>
+        <button class="create-button" loading="{{creating}}" bindtap="submitNewHallAndMove">创建并移动</button>
+      </view>
     </view>
   </view>
 </view>

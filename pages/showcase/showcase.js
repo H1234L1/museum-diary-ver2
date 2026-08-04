@@ -28,6 +28,7 @@ Page({
     hallId: '',
     hallSubtitle: 'Life Museum',
     items: [],
+    recordCount: 0,
     displayItems: [],
     currentExhibit: null,
     currentIndex: 0,
@@ -36,7 +37,7 @@ Page({
     hasItems: false,
     canCycle: false,
     showingAddSlot: true,
-    addSlotTitle: '收藏第一件展品',
+    addSlotTitle: '添加展品',
     nextExhibitNumber: '0001',
     progressText: '等待第一件收藏'
   },
@@ -82,18 +83,26 @@ Page({
 
     const hallName = this.data.hallName || '主馆'
     const hallId = this.data.hallId
-    const items = normalizeItems(user.items.filter((item) => (
+    const records = normalizeItems(user.items.filter((item) => (
       (hallId && item.hallId === hallId) || (item.hall || '主馆') === hallName
     )))
+    const items = [
+      ...records,
+      {
+        id: '__add_exhibit__',
+        type: 'add',
+        isAdd: true,
+        title: '添加展品',
+        number: String(records.length + 1).padStart(4, '0')
+      }
+    ]
 
-    const currentIndex = items.length
-      ? Math.min(this.data.currentIndex, items.length - 1)
-      : 0
-    this.setData({ items, currentIndex }, () => this.updateDisplay())
+    const currentIndex = Math.min(this.data.currentIndex, items.length - 1)
+    this.setData({ items, recordCount: records.length, currentIndex }, () => this.updateDisplay())
   },
 
   updateDisplay() {
-    const { items, currentIndex } = this.data
+    const { items, currentIndex, recordCount } = this.data
     const total = items.length
     const safeIndex = total ? Math.min(currentIndex, total - 1) : 0
     const displayItems = []
@@ -115,10 +124,12 @@ Page({
       currentExhibit: total ? items[safeIndex] : null,
       hasItems: total > 0,
       canCycle: total > 1,
-      showingAddSlot: total === 0,
-      addSlotTitle: total ? '添加下一件收藏' : '收藏第一件展品',
-      nextExhibitNumber: String(total + 1).padStart(4, '0'),
-      progressText: total ? `${safeIndex + 1} / ${total}` : '等待第一件收藏'
+      showingAddSlot: Boolean(items[safeIndex] && items[safeIndex].isAdd),
+      addSlotTitle: '添加展品',
+      nextExhibitNumber: String(recordCount + 1).padStart(4, '0'),
+      progressText: items[safeIndex] && items[safeIndex].isAdd
+        ? '新增展位'
+        : `${safeIndex + 1} / ${recordCount}`
     })
   },
 
@@ -200,6 +211,10 @@ Page({
 
   openExhibit(e) {
     const { id, type } = e.currentTarget.dataset
+    if (type === 'add' || id === '__add_exhibit__') {
+      this.addExhibit()
+      return
+    }
     if (!id) return
     wx.navigateTo({ url: `/pages/detail/detail?type=${type || 'text'}&id=${id}` })
   },

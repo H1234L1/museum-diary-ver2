@@ -1,4 +1,4 @@
-const { getUser, moveItemsToHall } = require('../../services/user-service')
+const { getUser, createHall, moveItemsToHall } = require('../../services/user-service')
 
 const TYPE_LABELS = {
   photo: '图片',
@@ -70,7 +70,13 @@ Page({
     selectedCount: 0,
     moveTargets: [],
     targetSheetVisible: false,
-    moving: false
+    moving: false,
+    creatorVisible: false,
+    newHallName: '',
+    newHallDescription: '',
+    selectedCover: '',
+    coverOptions: [],
+    creating: false
   },
 
   onLoad(options = {}) {
@@ -127,8 +133,12 @@ Page({
       if (hallId && hall.id) return hall.id !== hallId
       return hall.name !== hallName
     })
+    const coverOptions = user.items
+      .filter((item) => item.image)
+      .reduce((images, item) => images.includes(item.image) ? images : [...images, item.image], [])
+      .slice(0, 12)
 
-    this.setData({ groups: groupItems(hallItems), moveTargets })
+    this.setData({ groups: groupItems(hallItems), moveTargets, coverOptions })
   },
 
   goBack() {
@@ -188,15 +198,6 @@ Page({
       wx.showToast({ title: '请先选择展品', icon: 'none' })
       return
     }
-    if (!this.data.moveTargets.length) {
-      wx.showModal({
-        title: '还没有其他展馆',
-        content: '请先创建一个副馆，再移动展品。',
-        showCancel: false,
-        confirmText: '知道了'
-      })
-      return
-    }
     this.setData({ targetSheetVisible: true })
   },
 
@@ -228,6 +229,76 @@ Page({
     } catch (error) {
       this.setData({ moving: false })
       wx.showToast({ title: '移动失败，请重试', icon: 'none' })
+    }
+  },
+
+  createHallAndMove() {
+    if (this.data.moving) return
+    this.setData({
+      targetSheetVisible: false,
+      creatorVisible: true,
+      newHallName: '',
+      newHallDescription: '',
+      selectedCover: '',
+      creating: false
+    })
+  },
+
+  closeCreator() {
+    if (this.data.creating) return
+    this.setData({ creatorVisible: false, targetSheetVisible: true })
+  },
+
+  updateNewHallName(e) {
+    this.setData({ newHallName: e.detail.value })
+  },
+
+  updateNewHallDescription(e) {
+    this.setData({ newHallDescription: e.detail.value })
+  },
+
+  chooseDefaultCover() {
+    this.setData({ selectedCover: '' })
+  },
+
+  chooseCover(e) {
+    this.setData({ selectedCover: e.currentTarget.dataset.image })
+  },
+
+  async submitNewHallAndMove() {
+    const name = this.data.newHallName.trim()
+    if (!name) {
+      wx.showToast({ title: '请先为副馆取一个名字', icon: 'none' })
+      return
+    }
+    if (this.data.creating) return
+
+    this.setData({ creating: true, moving: true })
+    try {
+      const hall = await createHall({
+        name,
+        description: this.data.newHallDescription,
+        coverImage: this.data.selectedCover
+      })
+      const result = await moveItemsToHall(this.data.selectedIds, hall)
+      this.setData({
+        creating: false,
+        moving: false,
+        creatorVisible: false,
+        targetSheetVisible: false,
+        selecting: false,
+        selectedIds: [],
+        selectedMap: {},
+        selectedCount: 0
+      })
+      await this.loadHall()
+      wx.showToast({ title: `已新建并移动 ${result.movedCount} 件`, icon: 'success' })
+    } catch (error) {
+      this.setData({ creating: false, moving: false })
+      wx.showToast({
+        title: error.message === 'Hall name already exists' ? '已经有同名副馆了' : '创建或移动失败，请重试',
+        icon: 'none'
+      })
     }
   }
 })
