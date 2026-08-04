@@ -143,6 +143,10 @@
   background: linear-gradient(135deg,#dec6a0,#caaa79);
   box-shadow: 0 10rpx 20rpx rgba(60,40,18,.2);
 }
+.stats-card-hover {
+  transform: translateY(2rpx) scale(.995);
+  box-shadow: 0 6rpx 13rpx rgba(60,40,18,.17);
+}
 .stat {
   flex: 1;
   text-align: center;

@@ -27,7 +27,13 @@
       <view class="collect-subtitle">记录每一段独特的人生故事</view>
     </navigator>
 
-    <view class="stats-card">
+    <view
+      class="stats-card"
+      bindtap="openGallery"
+      hover-class="stats-card-hover"
+      hover-stay-time="90"
+      aria-label="进入展厅"
+    >
       <view class="stat">
         <view class="stat-label">馆藏总数</view>
         <view><text class="stat-number">{{exhibitCount}}</text><text class="stat-unit">件</text></view>
