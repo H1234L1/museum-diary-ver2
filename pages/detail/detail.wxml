@@ -3,11 +3,19 @@
     <view class="detail-nav-row" style="height: {{navigationBarHeight}}px;">
       <view class="back" bindtap="goBack">‹</view>
       <view class="detail-nav-title">展品详情</view>
-      <view class="top-more" bindtap="showActions">•••</view>
+      <view class="detail-nav-spacer"></view>
     </view>
   </view>
 
   <view class="gallery-light">
+    <view wx:if="{{!isSharedViewer}}" class="showcase-menu-wrap">
+      <view class="showcase-menu-trigger" bindtap="toggleActionsMenu">•••</view>
+      <view wx:if="{{actionsMenuVisible}}" class="showcase-menu">
+        <view class="showcase-menu-item" bindtap="editItem"><text class="menu-edit-icon">✎</text>编辑</view>
+        <button class="showcase-menu-item" open-type="share" bindtap="closeActionsMenu"><text class="menu-share-icon">↗</text>分享</button>
+      </view>
+    </view>
+
     <view wx:if="{{type === 'photo'}}" class="photo-exhibit" style="height: {{textGalleryHeight}}px;">
       <view class="gallery-ceiling"></view>
       <view class="spotlight-fixture"><view class="spotlight-rim"></view><view class="spotlight-bulb"></view></view>
@@ -28,7 +36,8 @@
 
         <view class="description-card photo-card">
           <view wx:if="{{record && record.date}}" class="exhibit-date">{{displayDate}} 入藏</view>
-          <view wx:if="{{record && record.story}}" class="exhibit-description">{{record.story}}</view>
+          <view wx:if="{{record && record.story}}" class="photo-story-preview">{{record.story}}</view>
+          <view wx:if="{{photoStoryExpandable}}" class="photo-story-expand" bindtap="openPhotoStory">… 展开</view>
           <view class="hall-link">所属展厅 <text>{{record && record.hall ? record.hall : '主馆'}}　›</text></view>
         </view>
       </view>
@@ -92,10 +101,69 @@
     </view>
   </view>
 
-  <view class="detail-actions showcase-actions">
-    <view class="action-button" bindtap="editItem"><view class="action-icon edit-action-icon">✎</view><text>编辑</text></view>
-    <view class="action-button" bindtap="comment"><view class="action-icon">○</view><text>留言</text></view>
-    <button open-type="share"><view class="action-icon share-action-icon"><view class="share-arrow-shaft"></view><view class="share-arrow-head"></view></view><text>分享</text></button>
+  <view class="floating-comment" bindtap="comment">
+    <view class="floating-comment-icon"></view>
+    <text>留言</text>
+  </view>
+  <view wx:if="{{photoStoryVisible}}" class="photo-story-mask" bindtap="closePhotoStory"></view>
+  <view wx:if="{{photoStoryVisible}}" class="photo-story-reader" catchtap="noop">
+    <view class="photo-story-reader-topline"></view>
+    <view class="photo-story-reader-header">
+      <view>
+        <view class="photo-story-reader-kicker">EXHIBIT NOTE</view>
+        <view class="photo-story-reader-date">{{displayDate}} 入藏</view>
+      </view>
+      <view class="photo-story-reader-close" bindtap="closePhotoStory">×</view>
+    </view>
+    <view class="photo-story-reader-rule"><text></text><view>◇</view><text></text></view>
+    <scroll-view class="photo-story-reader-scroll" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view class="photo-story-reader-text">{{record.story}}</view>
+    </scroll-view>
+    <view class="photo-story-reader-footer">人生博物馆 · 私藏手记</view>
+  </view>
+  <view wx:if="{{commentsVisible}}" class="comment-mask" bindtap="closeComments"></view>
+  <view wx:if="{{commentsVisible}}" class="comment-sheet" catchtap="noop">
+    <view class="comment-sheet-handle"></view>
+    <view class="comment-sheet-header">
+      <view class="comment-sheet-seal">笺</view>
+      <view class="comment-sheet-heading">
+        <view class="comment-sheet-title">{{isSharedViewer ? '给馆主留言' : '私藏留言'}}</view>
+        <view class="comment-sheet-subtitle">{{isSharedViewer ? '仅你与馆主可见' : '仅你可见 · 来自分享访客'}}</view>
+      </view>
+      <view class="comment-sheet-close" bindtap="closeComments">×</view>
+    </view>
+    <view class="comment-sheet-rule"><text></text><view>◇</view><text></text></view>
+
+    <scroll-view class="comment-list" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view wx:if="{{!comments.length}}" class="comment-empty">
+        <view class="comment-empty-mark">〝</view>
+        <view>{{isSharedViewer ? '还没有留下悄悄话' : '暂时还没有收到留言'}}</view>
+      </view>
+      <view wx:for="{{comments}}" wx:key="id" class="comment-entry {{isSharedViewer ? 'is-mine' : ''}}">
+        <view class="comment-entry-meta">
+          <text>{{isSharedViewer ? '我的留言' : '一位访客'}}</text>
+          <text>{{item.displayTime}}</text>
+        </view>
+        <view class="comment-entry-paper">{{item.content}}</view>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{isSharedViewer}}" class="comment-composer">
+      <textarea
+        class="comment-input"
+        value="{{commentDraft}}"
+        maxlength="300"
+        auto-height="{{false}}"
+        placeholder="写下一句只给馆主看的话…"
+        placeholder-class="comment-placeholder"
+        bindinput="updateCommentDraft"
+      ></textarea>
+      <button
+        class="comment-submit"
+        disabled="{{!commentDraft || commentSubmitting}}"
+        bindtap="submitComment"
+      >{{commentSubmitting ? '送出中' : '送出'}}</button>
+    </view>
   </view>
   <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>

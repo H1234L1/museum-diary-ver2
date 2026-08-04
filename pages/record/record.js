@@ -1,7 +1,7 @@
 const pad = (value) => String(value).padStart(2, '0')
 const formatDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 const today = formatDate(new Date())
-const { getUser, addItem } = require('../../services/user-service')
+const { getUser, addItem, updateItem } = require('../../services/user-service')
 const { createSpeechRecognitionManager } = require('../../services/speech-recognition-service')
 
 let recorderManager = null
@@ -21,6 +21,9 @@ Page({
     selectedHallIndex: 0,
     hallOptionListHeight: 105,
     hallSelectorVisible: false,
+    isEditing: false,
+    editingId: '',
+    originalTitle: '',
     voiceMode: false,
     recording: false,
     audio: '',
@@ -41,7 +44,7 @@ Page({
     toast: ''
   },
 
-  onLoad(options = {}) {
+  async onLoad(options = {}) {
     let hall = '主馆'
     if (options.hall) {
       try {
@@ -50,7 +53,34 @@ Page({
         hall = options.hall
       }
     }
-    this.setData({ hall })
+    const editingId = options.edit ? decodeURIComponent(options.edit) : ''
+    if (editingId) {
+      const user = await getUser()
+      const existing = user && user.items.find((item) => item.id === editingId)
+      if (!existing) {
+        wx.showToast({ title: '找不到这件展品', icon: 'none' })
+        setTimeout(() => wx.navigateBack(), 600)
+        return
+      }
+
+      hall = existing.hall || hall
+      this.setData({
+        isEditing: true,
+        editingId,
+        originalTitle: existing.title || '',
+        date: /^\d{4}-\d{2}-\d{2}$/.test(existing.date || '') ? existing.date : today,
+        image: existing.image || '',
+        story: existing.story || '',
+        hall,
+        hallId: existing.hallId || '',
+        voiceMode: existing.type === 'audio',
+        audio: existing.audio || '',
+        audioDurationMs: Math.max(0, Number(existing.audioDurationMs) || 0),
+        voiceButtonText: existing.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+      })
+    } else {
+      this.setData({ hall })
+    }
     this.loadHallOptions(hall)
 
     const speechManager = createSpeechRecognitionManager()
@@ -459,15 +489,15 @@ Page({
 
     const story = this.data.story.trim()
     const type = this.data.image ? 'photo' : (this.data.audio ? 'audio' : 'text')
-    let title = ''
+    let title = this.data.isEditing ? this.data.originalTitle : ''
 
-    if (this.data.audio && !story) {
+    if (this.data.audio && !story && !title) {
       title = await this.requestAudioTitle()
       if (!title) return
     }
 
     const record = {
-      id: `exhibit-${Date.now()}`,
+      id: this.data.isEditing ? this.data.editingId : `exhibit-${Date.now()}`,
       title,
       date: this.data.date,
       image: this.data.image,
@@ -486,16 +516,20 @@ Page({
         wx.reLaunch({ url: '/pages/onboarding/onboarding' })
         return
       }
-      await addItem(record)
+      if (this.data.isEditing) await updateItem(record.id, record)
+      else await addItem(record)
     } catch (error) {
       this.notice('保存失败，请稍后再试')
       return
     }
 
-    await this.completeGuideStep('save-first-exhibit')
+    if (!this.data.isEditing) await this.completeGuideStep('save-first-exhibit')
 
     const destinationHall = record.hall || '主馆'
-    wx.showToast({ title: `已收藏到${destinationHall}`, icon: 'success' })
+    wx.showToast({
+      title: this.data.isEditing ? '展品已更新' : `已收藏到${destinationHall}`,
+      icon: 'success'
+    })
     setTimeout(() => {
       wx.redirectTo({
         url: `/pages/detail/detail?type=${type}&id=${record.id}&from=record&hall=${encodeURIComponent(destinationHall)}`

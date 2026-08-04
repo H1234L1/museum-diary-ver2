@@ -120,6 +120,28 @@ const deleteItem = async (itemId) => {
   return updatedUser
 }
 
+const updateItem = async (itemId, changes) => {
+  const user = await getUser()
+  if (!user) throw new Error('User not found')
+  if (!itemId) throw new Error('Item id is required')
+
+  let updatedItem = null
+  const items = user.items.map((item) => {
+    if (item.id !== itemId) return item
+    updatedItem = {
+      ...item,
+      ...changes,
+      id: item.id,
+      createdAt: item.createdAt
+    }
+    return updatedItem
+  })
+
+  if (!updatedItem) throw new Error('Item not found')
+  await saveUser({ ...user, items })
+  return updatedItem
+}
+
 const moveItemsToHall = async (itemIds, targetHall) => {
   const user = await getUser()
   if (!user) throw new Error('User not found')
@@ -218,6 +240,7 @@ module.exports = {
   createUser,
   clearUserData,
   addItem,
+  updateItem,
   createHall,
   deleteItem,
   moveItemsToHall,
