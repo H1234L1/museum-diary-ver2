@@ -70,6 +70,10 @@ Page({
   },
 
   handleTutorialAction(e) {
-    if (e.detail.stepId === 'discover-reports') this.openCurrentReport()
+    if (e.detail.stepId === 'discover-reports') {
+      wx.navigateTo({
+        url: `/pages/report/report?month=${this.data.currentMonthKey}&tutorialComplete=1`
+      })
+    }
   }
 })

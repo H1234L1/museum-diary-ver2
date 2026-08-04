@@ -1,4 +1,4 @@
-<view class="report-page">
+<view class="report-page" bindtap="handleTutorialPreviewTap">
   <view class="report-nav">
     <view class="back" bindtap="goBack">‹</view>
   </view>

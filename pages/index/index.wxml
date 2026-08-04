@@ -40,6 +40,10 @@
     </view>
   </view>
 
-  <museum-guide bind:action="handleTutorialAction"></museum-guide>
-  <museum-nav active="home"></museum-nav>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
+  <museum-nav id="museumNav" active="home"></museum-nav>
+</view>
+<view wx:if="{{entranceCoverVisible}}" class="entrance-cover {{entranceCoverLeaving ? 'is-leaving' : ''}}">
+  <image src="/assets/art/home-hero.jpg" mode="aspectFill" bindload="handleEntranceCoverLoaded"></image>
+  <view class="entrance-cover-wash"></view>
 </view>

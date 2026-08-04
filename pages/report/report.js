@@ -55,11 +55,19 @@ Page({
   },
 
   async onLoad(options = {}) {
+    this.tutorialCompletionPending = options.tutorialComplete === '1'
     const requestedMonthKey = /^\d{4}-(0[1-9]|1[0-2])$/.test(options.month || '')
       ? options.month
       : getMonthKey()
     this.setData({ requestedMonthKey })
     await this.loadReport()
+    if (this.tutorialCompletionPending) {
+      this.tutorialCompletionTimer = setTimeout(() => this.finishTutorialPreview(), 5000)
+    }
+  },
+
+  onUnload() {
+    if (this.tutorialCompletionTimer) clearTimeout(this.tutorialCompletionTimer)
   },
 
   async onShow() {
@@ -97,9 +105,27 @@ Page({
   },
 
   goBack() {
+    if (this.tutorialCompletionPending) {
+      this.finishTutorialPreview()
+      return
+    }
     wx.navigateBack({
       fail: () => wx.redirectTo({ url: '/pages/summary/summary' })
     })
+  },
+
+  finishTutorialPreview() {
+    if (!this.tutorialCompletionPending) return
+    this.tutorialCompletionPending = false
+    if (this.tutorialCompletionTimer) {
+      clearTimeout(this.tutorialCompletionTimer)
+      this.tutorialCompletionTimer = null
+    }
+    wx.reLaunch({ url: '/pages/index/index?tutorialComplete=1' })
+  },
+
+  handleTutorialPreviewTap() {
+    this.finishTutorialPreview()
   },
 
   onShareAppMessage() {

@@ -1,17 +1,12 @@
-<view wx:if="{{visible && !focusing}}" class="guide-shell guide-{{step.placement}}">
-  <view class="guide-avatar">馆</view>
-  <view class="guide-bubble">
-    <view class="guide-topline">
-      <view class="guide-name">博物馆向导</view>
-      <view class="guide-progress">{{stepNumber}} / {{stepCount}}</view>
-    </view>
-    <view class="guide-title">{{step.title}}</view>
-    <view class="guide-message">{{step.message}}</view>
-    <view class="guide-actions">
-      <button class="guide-skip" bindtap="skip">跳过</button>
-      <button class="guide-next" loading="{{moving}}" disabled="{{moving}}" bindtap="next">
-        {{step.actionLabel}} <text>›</text>
-      </button>
+<view wx:if="{{offerVisible}}" class="guide-choice-mask">
+  <view class="guide-choice-card">
+    <view class="guide-choice-seal">馆</view>
+    <view class="guide-choice-kicker">博物馆向导</view>
+    <view class="guide-choice-title">要开始新手引导吗？</view>
+    <view class="guide-choice-message">我会陪你收藏第一件展品、认识展厅，并找到属于你的月度总结。</view>
+    <view class="guide-choice-actions">
+      <button class="guide-choice-skip" disabled="{{moving}}" bindtap="declineTutorial">跳过</button>
+      <button class="guide-choice-start" disabled="{{moving}}" bindtap="acceptTutorial">开始新手引导</button>
     </view>
   </view>
 </view>

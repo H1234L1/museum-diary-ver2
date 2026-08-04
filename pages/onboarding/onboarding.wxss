@@ -68,17 +68,43 @@
 }
 
 .onboarding-button {
+  width: 330rpx;
   height: 92rpx;
-  margin-top: 52rpx;
+  margin: 52rpx auto 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 12rpx;
   color: #fffaf0;
   background: linear-gradient(100deg, #76562f, #a47b43);
   font-size: 29rpx;
   font-weight: 500;
   letter-spacing: 5rpx;
-  line-height: 92rpx;
+  line-height: 1;
 }
 
 .onboarding-button::after {
   border: 0;
 }
+.door-transition { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: rgba(43,32,22,.72); animation: door-scene-in .28s ease both; }
+.door-glow { position: absolute; left: 50%; top: 50%; width: 520rpx; height: 720rpx; opacity: .32; transform: translate(-50%,-50%) scale(.72); background: radial-gradient(ellipse,rgba(255,244,207,.94),rgba(228,190,126,.34) 48%,rgba(228,190,126,0) 72%); }
+.is-opening .door-glow { animation: door-glow-open 1.45s ease-out both; }
+.doorway { position: relative; width: 390rpx; height: 560rpx; overflow: hidden; border: 13rpx solid #a47a43; border-bottom-width: 19rpx; border-radius: 195rpx 195rpx 8rpx 8rpx; background: #d8c6ac; box-shadow: 0 22rpx 55rpx rgba(24,16,9,.42),inset 0 0 35rpx rgba(119,77,30,.22); }
+.door-destination { position: absolute; inset: 0; width: 100%; height: 100%; transform: scale(1.08); }
+.door-destination-wash { position: absolute; inset: 0; background: linear-gradient(180deg,rgba(255,244,211,.36),rgba(228,190,126,.08)); }
+.door-arch { position: absolute; inset: 14rpx; border: 3rpx solid rgba(119,80,36,.42); border-bottom: 0; border-radius: 170rpx 170rpx 0 0; }
+.museum-door { position: absolute; top: 0; bottom: 0; width: 50%; box-sizing: border-box; overflow: hidden; background: linear-gradient(90deg,#5d3b20,#9b6a35 46%,#6d4726); border: 2rpx solid #4f321c; }
+.is-opening .museum-door { animation-duration: 1.35s; animation-delay: .12s; animation-timing-function: cubic-bezier(.45,.03,.22,1); animation-fill-mode: forwards; }
+.museum-door-left { left: 0; transform-origin: left center; }
+.museum-door-right { right: 0; transform-origin: right center; }
+.is-opening .museum-door-left { animation-name: museum-door-left-open; }
+.is-opening .museum-door-right { animation-name: museum-door-right-open; }
+.door-panel { position: absolute; inset: 35rpx 25rpx; border: 4rpx double rgba(225,185,116,.58); border-radius: 120rpx 120rpx 8rpx 8rpx; box-shadow: inset 0 0 22rpx rgba(28,16,8,.32); }
+.door-caption { position: relative; margin-top: 40rpx; color: #fff7e6; font-size: 27rpx; letter-spacing: 6rpx; text-shadow: 0 3rpx 9rpx rgba(25,16,9,.5); }
+.is-opening .door-caption { animation: door-caption-fade 1.35s ease both; }
+@keyframes museum-door-left-open { from { transform: perspective(700rpx) rotateY(0); } to { transform: perspective(700rpx) rotateY(-82deg); } }
+@keyframes museum-door-right-open { from { transform: perspective(700rpx) rotateY(0); } to { transform: perspective(700rpx) rotateY(82deg); } }
+@keyframes door-glow-open { from { opacity: .32; transform: translate(-50%,-50%) scale(.72); } to { opacity: 1; transform: translate(-50%,-50%) scale(1.18); } }
+@keyframes door-scene-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes door-caption-fade { 0%,20% { opacity: 0; transform: translateY(10rpx); } 45%,100% { opacity: 1; transform: translateY(0); } }

@@ -1,3 +1,15 @@
+.guide-choice-mask { position: fixed; inset: 0; z-index: 190; display: flex; align-items: center; justify-content: center; padding: 40rpx; box-sizing: border-box; background: rgba(39,31,24,.52); -webkit-backdrop-filter: blur(5rpx); backdrop-filter: blur(5rpx); }
+.guide-choice-card { width: 100%; max-width: 620rpx; padding: 42rpx 38rpx 34rpx; box-sizing: border-box; border: 1rpx solid rgba(132,96,52,.34); border-radius: 24rpx; background: repeating-linear-gradient(0deg,rgba(119,89,54,.018) 0,rgba(119,89,54,.018) 1rpx,transparent 1rpx,transparent 9rpx),rgba(250,246,238,.98); text-align: center; box-shadow: 0 24rpx 60rpx rgba(42,29,17,.3),inset 0 2rpx rgba(255,255,255,.85); }
+.guide-choice-seal { width: 72rpx; height: 72rpx; margin: 0 auto 18rpx; border: 3rpx double #9a7446; color: #805d35; font-size: 37rpx; line-height: 72rpx; }
+.guide-choice-kicker { color: #9b7a51; font-size: 20rpx; letter-spacing: 3rpx; }
+.guide-choice-title { margin-top: 15rpx; color: #30261d; font-size: 35rpx; font-weight: 500; letter-spacing: 3rpx; }
+.guide-choice-message { margin-top: 18rpx; color: #665645; font-size: 24rpx; line-height: 1.75; }
+.guide-choice-actions { margin-top: 30rpx; display: flex; gap: 16rpx; }
+.guide-choice-actions button { height: 76rpx; margin: 0; padding: 0; flex: 1; border-radius: 10rpx; font-family: var(--font-display,"Source Han Serif SC","Noto Serif SC",serif); font-size: 23rpx; line-height: 76rpx; }
+.guide-choice-actions button::after { border: 0; }
+.guide-choice-skip { border: 1rpx solid rgba(128,96,57,.28); background: rgba(255,251,244,.65); color: #786651; }
+.guide-choice-start { background: linear-gradient(135deg,#ad8651,#8b642f); color: #fffaf0; box-shadow: 0 8rpx 17rpx rgba(99,68,31,.18); }
+
 .guide-shell {
   position: fixed;
   left: 28rpx;
@@ -78,6 +90,7 @@
 
 .guide-actions button::after { border: 0; }
 .guide-skip { background: transparent; color: #8c7a65; }
+.guide-auto-hint { color: #a17d4e; font-size: 20rpx; letter-spacing: 1rpx; }
 .guide-next { min-width: 170rpx; background: linear-gradient(135deg,#ad8651,#8b642f); color: #fffaf0; box-shadow: 0 7rpx 14rpx rgba(99,68,31,.17); }
 .guide-next text { margin-left: 8rpx; font-family: var(--font-numeral,serif); font-size: 29rpx; }
 

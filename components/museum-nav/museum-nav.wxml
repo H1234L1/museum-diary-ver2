@@ -2,7 +2,7 @@
   <navigator
     wx:for="{{items}}"
     wx:key="key"
-    class="nav-item {{active === item.key ? 'active' : ''}}"
+    class="nav-item nav-{{item.key}} {{active === item.key ? 'active' : ''}}"
     url="{{item.url}}"
     open-type="redirect"
     hover-class="nav-hover"

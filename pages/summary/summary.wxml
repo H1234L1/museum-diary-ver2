@@ -51,6 +51,6 @@
     </view>
   </view>
 
-  <museum-guide bind:action="handleTutorialAction"></museum-guide>
-  <museum-nav active="summary"></museum-nav>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
+  <museum-nav id="museumNav" active="summary"></museum-nav>
 </view>
