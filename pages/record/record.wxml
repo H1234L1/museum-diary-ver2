@@ -1,6 +1,6 @@
 <view class="record-page">
   <view class="record-header">
-    <view class="page-title">记录</view>
+    <view class="page-title">{{isEditing ? '编辑展品' : '记录'}}</view>
     <view class="draft-link" bindtap="openDrafts">草稿箱</view>
   </view>
 
@@ -80,10 +80,10 @@
       <view class="hall-choice-name">{{hall}}</view>
       <view class="hall-choice-arrow">⌄</view>
     </view>
-    <view class="save-note">内容默认存入主馆</view>
+    <view class="save-note">{{isEditing ? '修改将保存至原展品' : '内容默认存入主馆'}}</view>
   </view>
 
-  <button class="submit-button" bindtap="save">入藏</button>
+  <button class="submit-button" bindtap="save">{{isEditing ? '保存修改' : '入藏'}}</button>
 
   <view class="bottom-space"></view>
   <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
