@@ -12,6 +12,8 @@ let recordingStartedAt = 0
 Page({
   data: {
     date: today,
+    statusBarHeight: 20,
+    navigationBarHeight: 44,
     image: '',
     story: '',
     storyFocused: false,
@@ -24,6 +26,7 @@ Page({
     isEditing: false,
     editingId: '',
     originalTitle: '',
+    originalType: 'photo',
     voiceMode: false,
     recording: false,
     audio: '',
@@ -45,6 +48,22 @@ Page({
   },
 
   async onLoad(options = {}) {
+    const windowInfo = wx.getWindowInfo
+      ? wx.getWindowInfo()
+      : wx.getSystemInfoSync()
+    const statusBarHeight = windowInfo.statusBarHeight || 20
+    let navigationBarHeight = 44
+    if (wx.getMenuButtonBoundingClientRect) {
+      const capsule = wx.getMenuButtonBoundingClientRect()
+      if (capsule && capsule.top && capsule.height) {
+        navigationBarHeight = (capsule.top - statusBarHeight) * 2 + capsule.height
+      }
+    }
+    this.setData({
+      statusBarHeight,
+      navigationBarHeight: Math.max(40, navigationBarHeight)
+    })
+
     let hall = '主馆'
     if (options.hall) {
       try {
@@ -68,6 +87,7 @@ Page({
         isEditing: true,
         editingId,
         originalTitle: existing.title || '',
+        originalType: existing.type || 'photo',
         date: /^\d{4}-\d{2}-\d{2}$/.test(existing.date || '') ? existing.date : today,
         image: existing.image || '',
         story: existing.story || '',
@@ -147,6 +167,15 @@ Page({
 
   onReady() {
     this.calculateTextBoxLimit()
+  },
+
+  exitEdit() {
+    if (!this.data.isEditing) return
+    wx.navigateBack({
+      fail: () => wx.redirectTo({
+        url: `/pages/detail/detail?type=${this.data.originalType}&id=${encodeURIComponent(this.data.editingId)}`
+      })
+    })
   },
 
   onUnload() {
@@ -346,10 +375,6 @@ Page({
     })
   },
 
-  openDrafts() {
-    this.notice('草稿箱将在保存草稿后显示内容')
-  },
-
   setStory(e) {
     const story = e.detail.value
     this.setData({ story })
@@ -531,9 +556,13 @@ Page({
       icon: 'success'
     })
     setTimeout(() => {
-      wx.redirectTo({
-        url: `/pages/detail/detail?type=${type}&id=${record.id}&from=record&hall=${encodeURIComponent(destinationHall)}`
-      })
+      const hallId = record.hallId ? `&hallId=${encodeURIComponent(record.hallId)}` : ''
+      const url = `/pages/detail/detail?type=${type}&id=${record.id}&hall=${encodeURIComponent(destinationHall)}${hallId}`
+      if (this.data.isEditing) {
+        wx.reLaunch({ url: `${url}&afterEdit=1` })
+      } else {
+        wx.redirectTo({ url: `${url}&from=record` })
+      }
     }, 700)
   },
 
