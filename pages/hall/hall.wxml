@@ -6,36 +6,57 @@
       <view class="header-spacer"></view>
     </view>
     <view class="overview-switch-row">
-      <view class="overview-switch" bindtap="openShowcase">切换到博物馆陈列</view>
+      <view class="museum-mode-switch">
+        <view class="mode-option" bindtap="openShowcase">展馆空间</view>
+        <view class="mode-divider"></view>
+        <view class="mode-option active">藏品管理</view>
+      </view>
     </view>
   </view>
 
-  <view class="filter-bar">
-    <view
-      wx:for="{{filters}}"
-      wx:key="*this"
-      class="filter {{activeFilter === item ? 'active' : ''}}"
-      data-filter="{{item}}"
-      bindtap="selectFilter"
-    >{{item}}</view>
-  </view>
+  <view wx:if="{{filterMenuVisible}}" class="filter-menu-mask" bindtap="closeFilterMenu"></view>
 
-  <view class="tools-row">
-    <text>全部馆藏</text>
-    <view class="tools-actions">
-      <text class="tool" bindtap="openSearch">⌕</text>
-      <view class="move-trigger {{selecting ? 'active' : ''}}" bindtap="toggleSelectionMode">
-        <view class="move-glyph"><view class="move-box"></view><view class="move-arrow"></view></view>
-        <text>{{selecting ? '取消' : '移馆'}}</text>
+  <view class="search-tools-row">
+    <view class="search-field">
+      <view class="search-glyph"></view>
+      <input
+        class="search-input"
+        value="{{searchQuery}}"
+        placeholder="搜索馆藏"
+        confirm-type="search"
+        bindinput="handleSearchInput"
+      />
+      <view wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch">×</view>
+    </view>
+
+    <view class="filter-trigger {{activeFilter !== '全部' ? 'active' : ''}}" bindtap="toggleFilterMenu">
+      <view class="filter-lines">
+        <view class="filter-line line-one"></view>
+        <view class="filter-line line-two"></view>
+        <view class="filter-line line-three"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{filterMenuVisible}}" class="filter-popover" catchtap="noop">
+      <view class="filter-popover-title">筛选展品</view>
+      <view
+        wx:for="{{filterOptions}}"
+        wx:key="*this"
+        class="filter-option {{activeFilter === item ? 'active' : ''}}"
+        data-filter="{{item}}"
+        bindtap="selectFilter"
+      >
+        <text>{{item}}</text>
+        <text wx:if="{{activeFilter === item}}" class="filter-check">✓</text>
       </view>
     </view>
   </view>
 
   <view wx:if="{{groups.length === 0}}" class="empty-hall">
     <view class="empty-mark">◇</view>
-    <view class="empty-title">{{hallName}}还没有展品</view>
-    <view class="empty-copy">收藏你的第一个人生片刻，它会出现在这里。</view>
-    <navigator class="empty-button" url="/pages/record/record?new=1" open-type="redirect">收藏一件展品</navigator>
+    <view class="empty-title">{{hasActiveFilter ? '没有找到匹配的展品' : hallName + '还没有展品'}}</view>
+    <view class="empty-copy">{{hasActiveFilter ? '试试更换筛选类型或搜索关键词。' : '收藏你的第一个人生片刻，它会出现在这里。'}}</view>
+    <navigator wx:if="{{!hasActiveFilter}}" class="empty-button" url="/pages/record/record?new=1" open-type="redirect">收藏一件展品</navigator>
   </view>
 
   <view wx:for="{{groups}}" wx:key="month" class="month-group">
@@ -48,7 +69,6 @@
         wx:for="{{item.items}}"
         wx:for-item="exhibit"
         wx:key="id"
-        wx:if="{{activeFilter === '全部' || activeFilter === exhibit.category}}"
         class="exhibit-tile tile-{{exhibit.type}} {{selectedMap[exhibit.id] ? 'selected' : ''}}"
         data-id="{{exhibit.id}}"
         data-type="{{exhibit.type}}"
@@ -82,6 +102,11 @@
   </view>
 
   <view class="hall-bottom-space"></view>
+
+  <view wx:if="{{totalItemCount}}" class="move-fab {{selecting ? 'active' : ''}}" bindtap="toggleSelectionMode">
+    <view class="move-glyph"><view class="move-box"></view><view class="move-arrow"></view></view>
+    <text>{{selecting ? '取消' : '移馆'}}</text>
+  </view>
 
   <view wx:if="{{selecting}}" class="selection-dock">
     <view class="selection-summary">已选 <text>{{selectedCount}}</text> 件</view>

@@ -20,10 +20,13 @@
   </view>
 
   <view
-    class="overview-button"
+    class="museum-mode-switch showcase-mode-switch"
     style="top: calc({{statusBarHeight}}px + {{navigationBarHeight}}px + 12rpx);"
-    bindtap="openOverview"
-  >作品概览</view>
+  >
+    <view class="mode-option active">展馆空间</view>
+    <view class="mode-divider"></view>
+    <view class="mode-option" bindtap="openOverview">藏品管理</view>
+  </view>
 
   <view class="gallery-identity">
     <view class="gallery-name">{{hallName}}</view>
