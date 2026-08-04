@@ -1,12 +1,15 @@
 const {
   getUser,
   createHall,
-  getCollectionCount,
   formatStat
 } = require('../../services/user-service')
 
 const getHallItems = (user, hall) => {
   return user.items.filter((item) => item.hallId === hall.id || item.hall === hall.name)
+}
+
+const getMainHallItems = (user) => {
+  return user.items.filter((item) => (item.hall || '主馆') === '主馆')
 }
 
 Page({
@@ -50,7 +53,7 @@ Page({
     })
 
     this.setData({
-      mainHallCount: formatStat(getCollectionCount(user)),
+      mainHallCount: formatStat(getMainHallItems(user).length),
       mainHallUrl: '/pages/showcase/showcase?hall=%E4%B8%BB%E9%A6%86',
       subHalls,
       coverOptions
