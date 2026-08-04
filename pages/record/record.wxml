@@ -1,7 +1,13 @@
-<view class="record-page">
-  <view class="record-header">
-    <view class="page-title">{{isEditing ? '编辑展品' : '记录'}}</view>
-    <view class="draft-link" bindtap="openDrafts">草稿箱</view>
+<view class="record-page {{isEditing ? 'editing-record-page' : ''}}">
+  <view wx:if="{{isEditing}}" class="edit-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="edit-nav-row" style="height: {{navigationBarHeight}}px;">
+      <view class="edit-back" bindtap="exitEdit">‹</view>
+      <view class="edit-nav-title">编辑</view>
+      <view class="edit-nav-spacer"></view>
+    </view>
+  </view>
+  <view wx:else class="record-header">
+    <view class="page-title">记录</view>
   </view>
 
   <view class="museum-frame" bindtap="chooseImage">

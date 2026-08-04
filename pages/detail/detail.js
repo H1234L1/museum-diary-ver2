@@ -17,7 +17,9 @@ Page({
     navigationBarHeight: 44,
     textGalleryHeight: 600,
     openedFromRecord: false,
+    openedAfterEdit: false,
     returnHall: '主馆',
+    returnHallId: '',
     playing: false,
     deleting: false,
     actionsMenuVisible: false,
@@ -81,7 +83,9 @@ Page({
       photoStoryExpandable,
       isSharedViewer: options.shared === '1',
       openedFromRecord: options.from === 'record',
-      returnHall: (record && record.hall) || options.hall || '主馆'
+      openedAfterEdit: options.afterEdit === '1',
+      returnHall: (record && record.hall) || options.hall || '主馆',
+      returnHallId: (record && record.hallId) || options.hallId || ''
     })
 
     if (record && record.audio && wx.createInnerAudioContext) {
@@ -95,6 +99,14 @@ Page({
     }
   },
   goBack() {
+    if (this.data.openedAfterEdit) {
+      const hall = encodeURIComponent(this.data.returnHall || '主馆')
+      const hallId = this.data.returnHallId
+        ? `&hallId=${encodeURIComponent(this.data.returnHallId)}`
+        : ''
+      wx.redirectTo({ url: `/pages/showcase/showcase?hall=${hall}${hallId}` })
+      return
+    }
     if (this.data.openedFromRecord) {
       wx.redirectTo({
         url: `/pages/hall/hall?hall=${encodeURIComponent(this.data.returnHall || '主馆')}`
@@ -133,7 +145,7 @@ Page({
       this.notice('暂时找不到这件展品')
       return
     }
-    wx.redirectTo({ url: `/pages/record/record?edit=${encodeURIComponent(id)}` })
+    wx.navigateTo({ url: `/pages/record/record?edit=${encodeURIComponent(id)}` })
   },
   async comment() {
     const itemId = this.data.itemId
