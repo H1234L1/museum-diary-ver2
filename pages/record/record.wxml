@@ -24,7 +24,21 @@
     </view>
   </view>
 
-  <view class="composer {{voiceMode ? 'voice-mode' : ''}}">
+  <view wx:if="{{voiceDecisionVisible}}" class="voice-decision">
+    <view class="voice-decision-bubble keep-voice" bindtap="keepVoice">
+      <view class="voice-decision-title">保留语音</view>
+      <view class="voice-decision-copy">作为声音展品</view>
+    </view>
+    <view
+      class="voice-decision-bubble convert-text {{speechRecognitionAvailable && pendingTranscript ? '' : 'is-unavailable'}}"
+      bindtap="convertVoiceToText"
+    >
+      <view class="voice-decision-title">转文字</view>
+      <view class="voice-decision-copy">追加到文字记录</view>
+    </view>
+  </view>
+
+  <view class="composer {{voiceMode ? 'voice-mode' : ''}} {{voiceDecisionVisible ? 'has-decision' : ''}}">
     <view class="mode-toggle" bindtap="toggleVoiceMode">
       <view wx:if="{{!voiceMode}}" class="speech-icon">
         <view class="sound-dot"></view>
@@ -55,23 +69,49 @@
 
     <view
       wx:else
-      class="hold-to-talk {{recording ? 'is-recording' : ''}} {{cancelling ? 'is-cancelling' : ''}}"
-      bindtouchstart="startVoicePress"
-      bindtouchmove="moveVoicePress"
-      bindtouchend="endVoicePress"
-      bindtouchcancel="cancelVoicePress"
+      class="hold-to-talk {{recording ? 'is-recording' : ''}}"
+      bindtap="handleVoiceTap"
     >{{voiceButtonText}}</view>
   </view>
 
-  <picker class="date-picker" mode="date" value="{{date}}" bindchange="changeDate">
-    <view class="date-display">入藏日期　{{dateText}}　›</view>
-  </picker>
+  <view class="hall-destination">
+    <view class="destination-label">内容收藏至 <text>›</text></view>
+    <view class="hall-choice" bindtap="openHallSelector">
+      <view class="hall-choice-name">{{hall}}</view>
+      <view class="hall-choice-arrow">⌄</view>
+    </view>
+    <view class="save-note">内容默认存入主馆</view>
+  </view>
 
   <button class="submit-button" bindtap="save">入藏</button>
-  <view class="save-note">内容将默认收藏到「主馆」</view>
 
   <view class="bottom-space"></view>
   <museum-guide bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="record"></museum-nav>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
+
+  <view wx:if="{{hallSelectorVisible}}" class="hall-selector-mask" bindtap="closeHallSelector">
+    <view class="hall-selector-sheet" catchtap="stopPropagation">
+      <view class="selector-handle"></view>
+      <view class="selector-title">选择收藏展馆</view>
+      <view class="selector-subtitle">内容将存入你选择的人生展馆</view>
+
+      <scroll-view class="hall-option-list" style="height: {{hallOptionListHeight}}rpx;" scroll-y="true">
+        <view
+          wx:for="{{hallOptions}}"
+          wx:key="name"
+          class="hall-option {{index === selectedHallIndex ? 'selected' : ''}}"
+          data-index="{{index}}"
+          bindtap="selectHall"
+        >
+          <view class="hall-option-mark">馆</view>
+          <view class="hall-option-name">{{item.name}}</view>
+          <view wx:if="{{index === selectedHallIndex}}" class="hall-option-check">✓</view>
+          <view wx:else class="hall-option-chevron">›</view>
+        </view>
+      </scroll-view>
+
+      <button class="selector-cancel" bindtap="closeHallSelector">取消</button>
+    </view>
+  </view>
 </view>
