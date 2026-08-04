@@ -72,11 +72,16 @@ Page({
 
   handleTutorialAction(e) {
     if (e.detail.stepId === 'create-gallery') this.openCreator()
+    if (e.detail.stepId === 'go-to-summary') {
+      wx.redirectTo({ url: '/pages/summary/summary' })
+    }
   },
 
   closeCreator() {
     if (this.data.creating) return
     this.setData({ creatorVisible: false })
+    const guide = this.selectComponent && this.selectComponent('#museumGuide')
+    if (guide && guide.syncGuide) guide.syncGuide()
   },
 
   noop() {},
@@ -114,11 +119,17 @@ Page({
       })
       this.setData({ creatorVisible: false, creating: false })
       await this.loadGallery()
+      await this.completeGuideStep('create-gallery')
       this.notice('副馆已创建')
     } catch (error) {
       this.setData({ creating: false })
       this.notice(error.message === 'Hall name already exists' ? '已经有同名副馆了' : '创建失败，请重试')
     }
+  },
+
+  completeGuideStep(stepId) {
+    const guide = this.selectComponent && this.selectComponent('#museumGuide')
+    return guide && guide.completeStep ? guide.completeStep(stepId) : Promise.resolve(false)
   },
 
   openHall(e) {

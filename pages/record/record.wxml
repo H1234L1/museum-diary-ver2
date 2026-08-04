@@ -86,7 +86,7 @@
   <button class="submit-button" bindtap="save">入藏</button>
 
   <view class="bottom-space"></view>
-  <museum-guide bind:action="handleTutorialAction"></museum-guide>
+  <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
   <museum-nav active="record"></museum-nav>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 

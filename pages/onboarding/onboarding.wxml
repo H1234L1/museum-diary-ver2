@@ -9,11 +9,22 @@
     <view class="onboarding-subtitle">每一个瞬间，都值得被收藏</view>
     <button
       class="onboarding-button"
-      loading="{{loggingIn}}"
       disabled="{{loggingIn}}"
       bindtap="startMuseum"
     >
       开启我的博物馆
     </button>
+  </view>
+
+  <view wx:if="{{openingDoor}}" class="door-transition {{doorsOpening ? 'is-opening' : ''}}">
+    <view class="door-glow"></view>
+    <view class="doorway">
+      <image class="door-destination" src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
+      <view class="door-destination-wash"></view>
+      <view class="door-arch"></view>
+      <view class="museum-door museum-door-left"><view class="door-panel"></view></view>
+      <view class="museum-door museum-door-right"><view class="door-panel"></view></view>
+    </view>
+    <view class="door-caption">博物馆正在为你开启</view>
   </view>
 </view>

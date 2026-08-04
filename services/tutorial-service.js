@@ -2,7 +2,7 @@ const storage = require('./storage-adapter')
 const { TUTORIAL_STEPS } = require('../config/tutorial-steps')
 
 const TUTORIAL_STORAGE_KEY = 'museum:tutorial:v1'
-const TUTORIAL_VERSION = 1
+const TUTORIAL_VERSION = 3
 
 const createState = (status = 'idle', stepIndex = 0) => ({
   version: TUTORIAL_VERSION,
@@ -13,7 +13,12 @@ const createState = (status = 'idle', stepIndex = 0) => ({
 
 const getTutorialState = async () => {
   const state = await storage.get(TUTORIAL_STORAGE_KEY)
-  if (!state || state.version !== TUTORIAL_VERSION) return createState()
+  if (!state) return createState()
+  if (state.version !== TUTORIAL_VERSION) {
+    if (state.status === 'active') return createState('active', 0)
+    if (state.status === 'completed') return createState('completed', TUTORIAL_STEPS.length - 1)
+    return createState(state.status === 'skipped' ? 'skipped' : 'idle', 0)
+  }
 
   return {
     ...state,
@@ -32,6 +37,7 @@ const saveTutorialState = async (state) => {
 }
 
 const startTutorial = async () => saveTutorialState(createState('active', 0))
+const offerTutorial = async () => saveTutorialState(createState('offered', 0))
 
 const advanceTutorial = async () => {
   const state = await getTutorialState()
@@ -49,12 +55,13 @@ const completeTutorial = async () => {
   return saveTutorialState({ ...state, status: 'completed', stepIndex: TUTORIAL_STEPS.length - 1 })
 }
 
-const resetTutorial = async () => startTutorial()
+const resetTutorial = async () => offerTutorial()
 
 module.exports = {
   TUTORIAL_STORAGE_KEY,
   TUTORIAL_VERSION,
   getTutorialState,
+  offerTutorial,
   startTutorial,
   advanceTutorial,
   skipTutorial,

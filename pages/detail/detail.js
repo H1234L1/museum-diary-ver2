@@ -85,6 +85,9 @@ Page({
       })
     })
   },
+  handleTutorialAction(e) {
+    if (e.detail.stepId === 'back-from-detail') this.goBack()
+  },
   toggleAudio() {
     const playing = !this.data.playing
     this.setData({ playing })

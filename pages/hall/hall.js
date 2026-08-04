@@ -177,6 +177,10 @@ Page({
     })
   },
 
+  handleTutorialAction(e) {
+    if (e.detail.stepId === 'back-to-gallery') this.goBack()
+  },
+
   handleExhibitTap(e) {
     const { id, type } = e.currentTarget.dataset
     if (!id) return
