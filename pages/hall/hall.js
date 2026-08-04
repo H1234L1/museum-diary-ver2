@@ -55,10 +55,36 @@ const groupItems = (items) => {
     }))
 }
 
+const filterHallItems = (items, activeFilter, searchQuery) => {
+  const normalizedQuery = String(searchQuery || '').trim().toLowerCase()
+
+  return items.filter((item) => {
+    const type = ['photo', 'text', 'audio'].includes(item.type) ? item.type : 'text'
+    if (activeFilter !== '全部' && TYPE_LABELS[type] !== activeFilter) return false
+    if (!normalizedQuery) return true
+
+    const searchableText = [
+      item.title || '未命名展品',
+      item.story || '',
+      TYPE_LABELS[type]
+    ].join(' ').toLowerCase()
+    return searchableText.includes(normalizedQuery)
+  })
+}
+
+const createVisibleGroups = (items, activeFilter, searchQuery) => (
+  groupItems(filterHallItems(items, activeFilter, searchQuery))
+)
+
 Page({
   data: {
     activeFilter: '全部',
-    filters: ['全部', '图片', '文字', '语音'],
+    filterOptions: ['全部', '图片', '文字', '语音'],
+    searchQuery: '',
+    filterMenuVisible: false,
+    hasActiveFilter: false,
+    totalItemCount: 0,
+    hallItems: [],
     statusBarHeight: 20,
     navigationBarHeight: 44,
     hallName: '主馆',
@@ -138,7 +164,14 @@ Page({
       .reduce((images, item) => images.includes(item.image) ? images : [...images, item.image], [])
       .slice(0, 12)
 
-    this.setData({ groups: groupItems(hallItems), moveTargets, coverOptions })
+    this.setData({
+      hallItems,
+      groups: createVisibleGroups(hallItems, this.data.activeFilter, this.data.searchQuery),
+      moveTargets,
+      coverOptions,
+      totalItemCount: hallItems.length,
+      hasActiveFilter: this.data.activeFilter !== '全部' || !!this.data.searchQuery.trim()
+    })
   },
 
   goBack() {
@@ -154,15 +187,41 @@ Page({
   },
 
   selectFilter(e) {
-    this.setData({ activeFilter: e.currentTarget.dataset.filter })
+    this.updateVisibleGroups({
+      activeFilter: e.currentTarget.dataset.filter,
+      filterMenuVisible: false
+    })
   },
 
-  openSearch() {
-    wx.showModal({
-      title: '搜索馆藏',
-      editable: true,
-      placeholderText: '输入展品名称或内容',
-      confirmText: '搜索'
+  toggleFilterMenu() {
+    this.setData({ filterMenuVisible: !this.data.filterMenuVisible })
+  },
+
+  closeFilterMenu() {
+    this.setData({ filterMenuVisible: false })
+  },
+
+  handleSearchInput(e) {
+    this.updateVisibleGroups({ searchQuery: e.detail.value })
+  },
+
+  clearSearch() {
+    this.updateVisibleGroups({ searchQuery: '' })
+  },
+
+  updateVisibleGroups(overrides = {}) {
+    const hasActiveFilterOverride = Object.prototype.hasOwnProperty.call(overrides, 'activeFilter')
+    const hasSearchQueryOverride = Object.prototype.hasOwnProperty.call(overrides, 'searchQuery')
+    const activeFilter = hasActiveFilterOverride ? overrides.activeFilter : this.data.activeFilter
+    const searchQuery = hasSearchQueryOverride ? overrides.searchQuery : this.data.searchQuery
+    const hallItems = this.data.hallItems || []
+
+    this.setData({
+      ...overrides,
+      activeFilter,
+      searchQuery,
+      groups: createVisibleGroups(hallItems, activeFilter, searchQuery),
+      hasActiveFilter: activeFilter !== '全部' || !!String(searchQuery).trim()
     })
   },
 
@@ -173,7 +232,8 @@ Page({
       selectedIds: [],
       selectedMap: {},
       selectedCount: 0,
-      targetSheetVisible: false
+      targetSheetVisible: false,
+      filterMenuVisible: false
     })
   },
 
