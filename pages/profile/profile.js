@@ -12,9 +12,9 @@ Page({
         description: '授权管理、本地存储与数据清除'
       },
       {
-        icon: '设',
-        name: '设置',
-        description: '新手引导与关于人生博物馆'
+        icon: '引',
+        name: '重新查看新手引导',
+        description: '再次了解收藏、展厅与月报'
       }
     ],
     toast: ''
@@ -54,7 +54,7 @@ Page({
   tapMenu(e) {
     const name = e.currentTarget.dataset.name
     if (name === '隐私与安全') this.openPrivacyMenu()
-    if (name === '设置') this.openSettingsMenu()
+    if (name === '重新查看新手引导') this.confirmRestartTutorial()
   },
 
   openPrivacyMenu() {
@@ -108,16 +108,6 @@ Page({
     })
   },
 
-  openSettingsMenu() {
-    wx.showActionSheet({
-      itemList: ['重新查看新手引导', '关于人生博物馆'],
-      success: ({ tapIndex }) => {
-        if (tapIndex === 0) this.confirmRestartTutorial()
-        if (tapIndex === 1) this.showAbout()
-      }
-    })
-  },
-
   confirmRestartTutorial() {
     wx.showModal({
       title: '重新查看新手引导？',
@@ -134,16 +124,6 @@ Page({
           this.notice('暂时无法重新开启引导')
         }
       }
-    })
-  },
-
-  showAbout() {
-    wx.showModal({
-      title: '人生博物馆',
-      content: '收藏照片、文字与声音，把每一段值得记住的人生时刻，放进属于自己的私人博物馆。\n\n当前版本：预览切换版',
-      showCancel: false,
-      confirmText: '好的',
-      confirmColor: '#8f6735'
     })
   },
 
