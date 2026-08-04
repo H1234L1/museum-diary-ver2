@@ -1,31 +1,36 @@
 const pad = (value) => String(value).padStart(2, '0')
 const formatDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-const formatDateText = (value) => {
-  const [year, month, day] = value.split('-')
-  return `${year} 年 ${month} 月 ${day} 日`
-}
 const today = formatDate(new Date())
 const { getUser, addItem } = require('../../services/user-service')
+const { createSpeechRecognitionManager } = require('../../services/speech-recognition-service')
 
 let recorderManager = null
-let voicePressActive = false
-let voiceStartY = 0
-let discardNextRecording = false
+let speechRecognitionAvailable = false
+let recorderStopping = false
+let recordingStartedAt = 0
 
 Page({
   data: {
     date: today,
-    dateText: formatDateText(today),
-    day: today.slice(-2),
     image: '',
     story: '',
     storyFocused: false,
     hall: '主馆',
+    hallId: '',
+    hallOptions: [{ id: '', name: '主馆' }],
+    selectedHallIndex: 0,
+    hallOptionListHeight: 105,
+    hallSelectorVisible: false,
     voiceMode: false,
     recording: false,
-    cancelling: false,
     audio: '',
     audioDurationMs: 0,
+    pendingAudio: '',
+    pendingAudioDurationMs: 0,
+    pendingTranscript: '',
+    liveTranscript: '',
+    voiceDecisionVisible: false,
+    speechRecognitionAvailable: false,
     textBoxHeight: 41,
     textBoxMinHeight: 41,
     textBoxMaxHeight: 180,
@@ -46,48 +51,66 @@ Page({
       }
     }
     this.setData({ hall })
+    this.loadHallOptions(hall)
 
-    if (!wx.getRecorderManager) return
+    const speechManager = createSpeechRecognitionManager()
+    recorderManager = speechManager.manager
+    speechRecognitionAvailable = speechManager.supportsRecognition
+    this.setData({ speechRecognitionAvailable })
+    if (!recorderManager) return
 
-    recorderManager = wx.getRecorderManager()
     this.handleRecorderStart = () => {
+      recorderStopping = false
+      recordingStartedAt = Date.now()
       this.setData({
         recording: true,
-        voiceButtonText: voicePressActive ? '松开 结束' : '正在结束…'
+        liveTranscript: '',
+        voiceButtonText: '录音中 · 轻触结束'
       })
-
-      if (!voicePressActive) {
-        discardNextRecording = true
-        recorderManager.stop()
-      }
     }
-    this.handleRecorderStop = ({ tempFilePath, duration = 0 }) => {
-      if (discardNextRecording) {
-        discardNextRecording = false
+    this.handleRecorderRecognize = ({ result = '' } = {}) => {
+      if (result) this.setData({ liveTranscript: result })
+    }
+    this.handleRecorderStop = (result = {}) => {
+      recorderStopping = false
+      const measuredDuration = recordingStartedAt ? Date.now() - recordingStartedAt : 0
+      recordingStartedAt = 0
+      const pendingAudio = result.tempFilePath || result.filePath || ''
+      const pendingTranscript = String(result.result || this.data.liveTranscript || '').trim()
+
+      if (!pendingAudio && !pendingTranscript) {
         this.setData({
           recording: false,
-          cancelling: false,
-          voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
+          liveTranscript: '',
+          voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
         })
+        this.notice('没有录到声音，请再试一次')
         return
       }
 
-      this.persistFile(tempFilePath, (audio) => {
-        this.setData({
-          recording: false,
-          cancelling: false,
-          audio,
-          audioDurationMs: Math.max(0, Number(duration) || 0),
-          voiceButtonText: '已录好 · 按住重录'
-        })
+      this.setData({
+        recording: false,
+        pendingAudio,
+        pendingAudioDurationMs: Math.max(0, Number(result.duration) || measuredDuration),
+        pendingTranscript,
+        liveTranscript: '',
+        voiceDecisionVisible: true,
+        voiceButtonText: '录音完成 · 请选择'
       })
     }
     this.handleRecorderError = () => {
-      this.setData({ recording: false, cancelling: false, voiceButtonText: '按住 说话' })
+      recorderStopping = false
+      recordingStartedAt = 0
+      this.setData({
+        recording: false,
+        liveTranscript: '',
+        voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+      })
       this.notice('录音没有成功，请检查麦克风权限')
     }
 
     recorderManager.onStart(this.handleRecorderStart)
+    if (recorderManager.onRecognize) recorderManager.onRecognize(this.handleRecorderRecognize)
     recorderManager.onStop(this.handleRecorderStop)
     recorderManager.onError(this.handleRecorderError)
   },
@@ -101,17 +124,66 @@ Page({
     if (!recorderManager) return
 
     if (recorderManager.offStart) recorderManager.offStart(this.handleRecorderStart)
+    if (recorderManager.offRecognize) recorderManager.offRecognize(this.handleRecorderRecognize)
     if (recorderManager.offStop) recorderManager.offStop(this.handleRecorderStop)
     if (recorderManager.offError) recorderManager.offError(this.handleRecorderError)
     recorderManager = null
   },
 
-  changeDate(e) {
-    const date = e.detail.value
+  async loadHallOptions(preferredHall = '主馆') {
+    try {
+      const user = await getUser()
+      const hallOptions = [
+        { id: '', name: '主馆' },
+        ...((user && user.halls) || []).map((hall) => ({
+          id: hall.id || '',
+          name: hall.name
+        }))
+      ]
+      const selectedHallIndex = Math.max(
+        0,
+        hallOptions.findIndex((hall) => hall.name === preferredHall)
+      )
+      const selectedHall = hallOptions[selectedHallIndex]
+
+      this.setData({
+        hallOptions,
+        selectedHallIndex,
+        hallOptionListHeight: Math.min(380, hallOptions.length * 105),
+        hall: selectedHall.name,
+        hallId: selectedHall.id
+      })
+    } catch (error) {
+      this.setData({
+        hallOptions: [{ id: '', name: '主馆' }],
+        selectedHallIndex: 0,
+        hallOptionListHeight: 105,
+        hall: '主馆',
+        hallId: ''
+      })
+    }
+  },
+
+  openHallSelector() {
+    this.setData({ hallSelectorVisible: true })
+  },
+
+  closeHallSelector() {
+    this.setData({ hallSelectorVisible: false })
+  },
+
+  stopPropagation() {},
+
+  selectHall(e) {
+    const selectedHallIndex = Number(e.currentTarget.dataset.index) || 0
+    const selectedHall = this.data.hallOptions[selectedHallIndex]
+    if (!selectedHall) return
+
     this.setData({
-      date,
-      dateText: formatDateText(date),
-      day: date.slice(-2)
+      selectedHallIndex,
+      hall: selectedHall.name,
+      hallId: selectedHall.id || '',
+      hallSelectorVisible: false
     })
   },
 
@@ -131,60 +203,83 @@ Page({
   },
 
   toggleVoiceMode() {
-    if (this.data.recording) return
+    if (this.data.recording) {
+      this.notice('请先轻触结束录音')
+      return
+    }
+    if (this.data.voiceDecisionVisible) {
+      this.notice('请先选择保留语音或转成文字')
+      return
+    }
     this.setData({
       voiceMode: !this.data.voiceMode,
-      cancelling: false,
-      voiceButtonText: this.data.audio ? '已录好 · 按住重录' : '按住 说话'
+      voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
     })
   },
 
-  startVoicePress(e) {
-    if (!recorderManager || this.data.recording) {
+  handleVoiceTap() {
+    if (!recorderManager) {
       if (!recorderManager) this.notice('当前微信版本暂不支持录音')
       return
     }
 
-    voicePressActive = true
-    discardNextRecording = false
-    voiceStartY = e.touches && e.touches[0] ? e.touches[0].clientY : 0
-    this.setData({ cancelling: false, voiceButtonText: '松开 结束' })
-    this.beginRecording()
-  },
-
-  moveVoicePress(e) {
-    if (!voicePressActive) return
-    const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : voiceStartY
-    const cancelling = voiceStartY - currentY > 70
-    if (cancelling === this.data.cancelling) return
-    this.setData({
-      cancelling,
-      voiceButtonText: cancelling ? '松开 取消' : '松开 结束'
-    })
-  },
-
-  endVoicePress() {
-    if (!voicePressActive) return
-    voicePressActive = false
-    discardNextRecording = this.data.cancelling
-
-    if (this.data.recording && recorderManager) {
+    if (this.data.voiceDecisionVisible || recorderStopping) return
+    if (this.data.recording) {
+      recorderStopping = true
+      this.setData({ voiceButtonText: '正在结束录音…' })
       recorderManager.stop()
       return
     }
 
-    this.setData({
-      cancelling: false,
-      voiceButtonText: this.data.audio ? '按住 重录' : '按住 说话'
+    this.beginRecording()
+  },
+
+  keepVoice() {
+    const pendingAudio = this.data.pendingAudio
+    if (!pendingAudio) {
+      this.notice('这段录音暂时无法保留，请重新录制')
+      return
+    }
+
+    this.persistFile(pendingAudio, (audio) => {
+      this.setData({
+        audio,
+        audioDurationMs: this.data.pendingAudioDurationMs,
+        pendingAudio: '',
+        pendingAudioDurationMs: 0,
+        pendingTranscript: '',
+        voiceDecisionVisible: false,
+        voiceButtonText: '已保留语音 · 轻触重录'
+      })
     })
   },
 
-  cancelVoicePress() {
-    if (!voicePressActive) return
-    voicePressActive = false
-    discardNextRecording = true
-    if (this.data.recording && recorderManager) recorderManager.stop()
-    this.setData({ cancelling: false, voiceButtonText: '按住 说话' })
+  convertVoiceToText() {
+    if (!speechRecognitionAvailable) {
+      this.notice('请先在微信后台启用语音识别插件')
+      return
+    }
+
+    const transcript = this.data.pendingTranscript.trim()
+    if (!transcript) {
+      this.notice('没有识别到文字，可以保留语音或重新录制')
+      return
+    }
+
+    const currentStory = this.data.story.trimEnd()
+    const story = currentStory ? `${currentStory}\n${transcript}` : transcript
+    this.setData({
+      story,
+      storyFocused: true,
+      voiceMode: false,
+      audio: '',
+      audioDurationMs: 0,
+      pendingAudio: '',
+      pendingAudioDurationMs: 0,
+      pendingTranscript: '',
+      voiceDecisionVisible: false,
+      voiceButtonText: '轻触开始录音'
+    })
   },
 
   beginRecording() {
@@ -195,16 +290,20 @@ Page({
 
     wx.authorize({
       scope: 'scope.record',
-      success: () => recorderManager.start({
-        duration: 600000,
-        sampleRate: 44100,
-        numberOfChannels: 1,
-        encodeBitRate: 96000,
-        format: 'mp3'
-      }),
+      success: () => {
+        const recordingOptions = speechRecognitionAvailable
+          ? { duration: 60000, lang: 'zh_CN' }
+          : {
+            duration: 60000,
+            sampleRate: 44100,
+            numberOfChannels: 1,
+            encodeBitRate: 96000,
+            format: 'mp3'
+          }
+        recorderManager.start(recordingOptions)
+      },
       fail: () => {
-        voicePressActive = false
-        this.setData({ cancelling: false, voiceButtonText: '按住 说话' })
+        this.setData({ voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音' })
         wx.showModal({
           title: '需要麦克风权限',
           content: '开启麦克风权限后，才可以把声音收藏进博物馆。',
@@ -268,7 +367,7 @@ Page({
         if (!rect) return
 
         const navigationHeight = 120 * rpxToPx
-        const contentBelowComposer = 235 * rpxToPx
+        const contentBelowComposer = 370 * rpxToPx
         const availableHeight = windowInfo.windowHeight
           - rect.top
           - navigationHeight
@@ -348,6 +447,11 @@ Page({
       return
     }
 
+    if (this.data.voiceDecisionVisible) {
+      this.notice('请先选择保留语音或转成文字')
+      return
+    }
+
     if (!this.data.image && !this.data.story.trim() && !this.data.audio) {
       this.notice('先放一张照片、写点什么，或留下一段声音吧')
       return
@@ -374,6 +478,7 @@ Page({
       type,
       createdAt: Date.now()
     }
+    if (this.data.hallId) record.hallId = this.data.hallId
 
     try {
       const user = await getUser()
