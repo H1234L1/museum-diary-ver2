@@ -12,7 +12,12 @@
       <view class="showcase-menu-trigger" bindtap="toggleActionsMenu">•••</view>
       <view wx:if="{{actionsMenuVisible}}" class="showcase-menu">
         <view class="showcase-menu-item" bindtap="editItem"><text class="menu-edit-icon">✎</text>编辑</view>
-        <button class="showcase-menu-item" open-type="share" bindtap="closeActionsMenu"><text class="menu-share-icon">↗</text>分享</button>
+        <button
+          class="showcase-menu-item"
+          open-type="{{shareToken ? 'share' : ''}}"
+          disabled="{{sharePreparing}}"
+          bindtap="handleShareTap"
+        ><text class="menu-share-icon">↗</text>{{sharePreparing ? '准备中' : '分享'}}</button>
       </view>
     </view>
 
