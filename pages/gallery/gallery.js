@@ -1,6 +1,7 @@
 const {
   getUser,
   createHall,
+  updateHall,
   deleteHalls,
   formatStat
 } = require('../../services/user-service')
@@ -20,6 +21,7 @@ Page({
     subHalls: [],
     coverOptions: [],
     creatorVisible: false,
+    editingHallId: '',
     hallName: '',
     hallDescription: '',
     selectedCover: '',
@@ -71,6 +73,7 @@ Page({
       hallName: '',
       hallDescription: '',
       selectedCover: '',
+      editingHallId: '',
       creating: false
     })
   },
@@ -117,18 +120,22 @@ Page({
 
     this.setData({ creating: true })
     try {
-      await createHall({
+      const editingHallId = this.data.editingHallId
+      const payload = {
         name: hallName,
         description: this.data.hallDescription,
         coverImage: this.data.selectedCover
-      })
-      this.setData({ creatorVisible: false, creating: false })
+      }
+      if (editingHallId) await updateHall(editingHallId, payload)
+      else await createHall(payload)
+      this.setData({ creatorVisible: false, creating: false, editingHallId: '' })
       await this.loadGallery()
-      await this.completeGuideStep('create-gallery')
-      this.notice('副馆已创建')
+      if (!editingHallId) await this.completeGuideStep('create-gallery')
+      if (editingHallId) this.cancelHallSelection()
+      this.notice(editingHallId ? '副馆已更新' : '副馆已创建')
     } catch (error) {
       this.setData({ creating: false })
-      this.notice(error.message === 'Hall name already exists' ? '已经有同名副馆了' : '创建失败，请重试')
+      this.notice(error.message === 'Hall name already exists' ? '已经有同名副馆了' : (this.data.editingHallId ? '修改失败，请重试' : '创建失败，请重试'))
     }
   },
 
@@ -181,6 +188,24 @@ Page({
       selectedHallIds: [],
       selectedHallMap: {},
       selectedHallCount: 0
+    })
+  },
+
+  editSelectedHall() {
+    if (this.data.selectedHallCount !== 1) {
+      this.notice(this.data.selectedHallCount ? '一次只能编辑一个副馆' : '请先选择一个副馆')
+      return
+    }
+    const hallId = this.data.selectedHallIds[0]
+    const hall = this.data.subHalls.find((item) => item.id === hallId)
+    if (!hall) return
+    this.setData({
+      creatorVisible: true,
+      editingHallId: hall.id,
+      hallName: hall.name || '',
+      hallDescription: hall.description || '',
+      selectedCover: hall.coverImage || '',
+      creating: false
     })
   },
 

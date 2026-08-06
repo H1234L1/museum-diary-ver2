@@ -56,6 +56,7 @@
     <view class="hall-selection-summary">已选 <text>{{selectedHallCount}}</text> 个副馆</view>
     <view class="hall-selection-actions">
       <button class="hall-cancel-button" bindtap="cancelHallSelection">取消</button>
+      <button class="hall-edit-button {{selectedHallCount === 1 ? 'ready' : ''}}" bindtap="editSelectedHall">编辑</button>
       <button class="hall-delete-button {{selectedHallCount ? 'ready' : ''}}" bindtap="confirmDeleteHalls">删除</button>
     </view>
   </view>
@@ -67,12 +68,12 @@
       <view class="sheet-handle"></view>
       <view class="creator-heading">
         <view>
-          <view class="creator-kicker">NEW GALLERY</view>
-          <view class="creator-title">创建一间副馆</view>
+          <view class="creator-kicker">{{editingHallId ? 'EDIT GALLERY' : 'NEW GALLERY'}}</view>
+          <view class="creator-title">{{editingHallId ? '编辑副馆' : '创建一间副馆'}}</view>
         </view>
         <view class="creator-close" bindtap="closeCreator">×</view>
       </view>
-      <view class="creator-note">先为它取一个名字，之后可以慢慢把展品放进来。</view>
+      <view class="creator-note">{{editingHallId ? '修改展厅名称、简介与封面图片。' : '先为它取一个名字，之后可以慢慢把展品放进来。'}}</view>
 
       <view class="field-label">副馆名称 <text>必填</text></view>
       <input
@@ -112,7 +113,7 @@
 
       <view class="creator-actions">
         <button class="cancel-button" bindtap="closeCreator">取消</button>
-        <button class="create-button" loading="{{creating}}" bindtap="submitHall">创建副馆</button>
+        <button class="create-button" loading="{{creating}}" bindtap="submitHall">{{editingHallId ? '保存修改' : '创建副馆'}}</button>
       </view>
     </view>
   </view>

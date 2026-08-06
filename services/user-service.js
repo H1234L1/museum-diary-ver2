@@ -96,6 +96,37 @@ const createHall = async ({ name, description = '', coverImage = '' }) => {
   return hall
 }
 
+const updateHall = async (hallId, { name, description = '', coverImage = '' }) => {
+  const user = await getUser()
+  if (!user) throw new Error('User not found')
+  if (!hallId) throw new Error('Hall id is required')
+
+  const normalizedName = String(name || '').trim()
+  if (!normalizedName) throw new Error('Hall name is required')
+  if (user.halls.some((hall) => hall.id !== hallId && hall.name === normalizedName)) {
+    throw new Error('Hall name already exists')
+  }
+
+  const originalHall = user.halls.find((hall) => hall.id === hallId)
+  if (!originalHall) throw new Error('Hall not found')
+  const halls = user.halls.map((hall) => hall.id === hallId ? {
+    ...hall,
+    name: normalizedName,
+    description: String(description || '').trim(),
+    coverImage: String(coverImage || '')
+  } : hall)
+  const items = user.items.map((item) => {
+    if (item.hallId === hallId || (!item.hallId && item.hall === originalHall.name)) {
+      return { ...item, hallId, hall: normalizedName }
+    }
+    return item
+  })
+
+  const updatedUser = { ...user, halls, items }
+  await saveUser(updatedUser)
+  return halls.find((hall) => hall.id === hallId)
+}
+
 const deleteItem = async (itemId) => {
   const user = await getUser()
   if (!user) throw new Error('User not found')
@@ -295,6 +326,7 @@ module.exports = {
   addItem,
   updateItem,
   createHall,
+  updateHall,
   deleteItem,
   deleteItems,
   deleteHalls,

@@ -45,7 +45,7 @@ Page({
   },
 
   onLoad(options = {}) {
-    this.returnDirectlyToGallery = options.fromRecord === '1'
+    this.returnDirectlyToGallery = options.fromRecord === '1' || options.returnToGallery === '1'
     let hallName = '主馆'
     if (options.hall) {
       try {
@@ -265,7 +265,23 @@ Page({
 
   goBack() {
     if (this.returnDirectlyToGallery) {
-      wx.redirectTo({ url: '/pages/gallery/gallery' })
+      const pages = getCurrentPages ? getCurrentPages() : []
+      let galleryIndex = -1
+      for (let index = pages.length - 2; index >= 0; index -= 1) {
+        if (pages[index] && pages[index].route === 'pages/gallery/gallery') {
+          galleryIndex = index
+          break
+        }
+      }
+
+      if (galleryIndex >= 0) {
+        wx.navigateBack({
+          delta: pages.length - 1 - galleryIndex,
+          fail: () => wx.redirectTo({ url: '/pages/gallery/gallery' })
+        })
+      } else {
+        wx.redirectTo({ url: '/pages/gallery/gallery' })
+      }
       return
     }
     wx.navigateBack({
