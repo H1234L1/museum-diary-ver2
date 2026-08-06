@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const crypto = require('crypto')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
@@ -6,10 +7,31 @@ cloud.init({
 
 const db = cloud.database()
 
-const publicComment = (comment) => ({
+const getUserId = (openId) => `user_${crypto.createHash('sha256').update(openId).digest('hex')}`
+
+const loadProfiles = async (comments) => {
+  const openIds = [...new Set(comments.map((comment) => comment.authorOpenId).filter(Boolean))]
+  const profiles = {}
+  await Promise.all(openIds.map(async (openId) => {
+    const result = await db.collection('users').doc(getUserId(openId)).get().catch(() => null)
+    const user = result && result.data
+    if (user && user.profileCompleted) {
+      profiles[openId] = {
+        displayName: String(user.displayName || ''),
+        avatarFileId: String(user.avatarFileId || '')
+      }
+    }
+  }))
+  return profiles
+}
+
+const publicComment = (comment, profiles) => ({
   id: comment._id,
   content: comment.content,
-  createdAt: comment.createdAt
+  createdAt: comment.createdAt,
+  author: comment.authorName
+    ? { displayName: String(comment.authorName), avatarFileId: '' }
+    : (profiles[comment.authorOpenId] || { displayName: '访客', avatarFileId: '' })
 })
 
 exports.main = async (event = {}) => {
@@ -42,9 +64,10 @@ exports.main = async (event = {}) => {
       : comments.data.filter((comment) => comment.authorOpenId === OPENID)
     visibleComments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
+    const profiles = await loadProfiles(visibleComments)
     return {
       ownerView: entry.ownerOpenId === OPENID,
-      comments: visibleComments.map(publicComment)
+      comments: visibleComments.map((comment) => publicComment(comment, profiles))
     }
   }
 
@@ -57,8 +80,9 @@ exports.main = async (event = {}) => {
   const ownedComments = comments.data.filter((comment) => comment.ownerOpenId === OPENID)
   ownedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
+  const profiles = await loadProfiles(ownedComments)
   return {
     ownerView: true,
-    comments: ownedComments.map(publicComment)
+    comments: ownedComments.map((comment) => publicComment(comment, profiles))
   }
 }

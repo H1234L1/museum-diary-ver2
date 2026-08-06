@@ -11,6 +11,10 @@ if (wx.cloud) {
 }
 
 App({
+  globalData: {
+    currentUser: null
+  },
+
   onShow() {
     startAppSession().catch(() => {})
   },

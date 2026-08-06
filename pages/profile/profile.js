@@ -1,5 +1,6 @@
 const { getUser, clearUserData } = require('../../services/user-service')
 const { resetTutorial } = require('../../services/tutorial-service')
+const { getCurrentUser, logout } = require('../../services/auth-service')
 
 Page({
   data: {
@@ -17,6 +18,9 @@ Page({
         description: '再次了解收藏、展厅与月报'
       }
     ],
+    loggedIn: false,
+    accountUser: null,
+    accountVisible: false,
     toast: ''
   },
 
@@ -42,7 +46,51 @@ Page({
 
   async onShow() {
     const user = await getUser()
-    if (!user) wx.reLaunch({ url: '/pages/onboarding/onboarding' })
+    if (!user) {
+      wx.reLaunch({ url: '/pages/onboarding/onboarding' })
+      return
+    }
+    try {
+      const accountUser = getApp().globalData.currentUser || await getCurrentUser()
+      getApp().globalData.currentUser = accountUser
+      this.setData({ loggedIn: !!accountUser, accountUser })
+    } catch (error) {
+      this.setData({ loggedIn: false, accountUser: null })
+    }
+  },
+
+  openAccount() {
+    this.setData({ accountVisible: true })
+  },
+
+  closeAccount() {
+    this.setData({ accountVisible: false })
+  },
+
+  handleAccountSuccess(e) {
+    const accountUser = e.detail.user
+    this.setData({
+      loggedIn: true,
+      accountUser,
+      accountVisible: false
+    })
+    this.notice('微信账号已登录')
+  },
+
+  confirmLogout() {
+    wx.showModal({
+      title: '退出登录？',
+      content: '退出后，本机馆藏仍会保留。你可以之后再次使用微信账号登录。',
+      cancelText: '取消',
+      confirmText: '退出登录',
+      confirmColor: '#9a503e',
+      success: ({ confirm }) => {
+        if (!confirm) return
+        logout()
+        this.setData({ loggedIn: false, accountUser: null, accountVisible: false })
+        this.notice('已退出登录')
+      }
+    })
   },
 
   goBack() {

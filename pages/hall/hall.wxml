@@ -73,6 +73,7 @@
         data-id="{{exhibit.id}}"
         data-type="{{exhibit.type}}"
         bindtap="handleExhibitTap"
+        bindlongpress="handleExhibitLongPress"
       >
         <view wx:if="{{selecting}}" class="selection-marker {{selectedMap[exhibit.id] ? 'checked' : ''}}">
           {{selectedMap[exhibit.id] ? '✓' : ''}}
@@ -80,11 +81,9 @@
         <block wx:if="{{exhibit.type === 'photo'}}">
           <image src="{{exhibit.image}}" mode="aspectFill"></image>
           <view class="photo-shade"></view>
-          <view class="photo-title">{{exhibit.title}}</view>
+          <view wx:if="{{exhibit.title}}" class="photo-title">{{exhibit.title}}</view>
         </block>
         <block wx:elif="{{exhibit.type === 'text'}}">
-          <view class="text-title">{{exhibit.title}}</view>
-          <view class="text-rule"></view>
           <view class="text-excerpt">{{exhibit.excerpt}}</view>
           <view class="text-ellipsis">…</view>
         </block>
@@ -109,8 +108,10 @@
   </view>
 
   <view wx:if="{{selecting}}" class="selection-dock">
-    <view class="selection-summary">已选 <text>{{selectedCount}}</text> 件</view>
-    <button class="move-button {{selectedCount ? 'ready' : ''}}" bindtap="openMoveTargets">移动到其他博物馆</button>
+    <view class="selection-actions">
+      <button class="delete-selected-button {{selectedCount ? 'ready' : ''}}" bindtap="confirmDeleteSelected">删除</button>
+      <button class="move-button {{selectedCount ? 'ready' : ''}}" bindtap="openMoveTargets">移馆</button>
+    </view>
   </view>
 
   <museum-nav active="gallery"></museum-nav>

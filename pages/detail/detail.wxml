@@ -12,12 +12,12 @@
       <view class="showcase-menu-trigger" bindtap="toggleActionsMenu">•••</view>
       <view wx:if="{{actionsMenuVisible}}" class="showcase-menu">
         <view class="showcase-menu-item" bindtap="editItem"><text class="menu-edit-icon">✎</text>编辑</view>
+        <view class="showcase-menu-item delete-menu-item" bindtap="confirmDelete"><text class="menu-delete-icon">×</text>删除</view>
         <button
           class="showcase-menu-item"
           open-type="{{shareToken ? 'share' : ''}}"
-          disabled="{{sharePreparing}}"
           bindtap="handleShareTap"
-        ><text class="menu-share-icon">↗</text>{{sharePreparing ? '准备中' : '分享'}}</button>
+        ><text class="menu-share-icon">↗</text>分享</button>
       </view>
     </view>
 
@@ -146,7 +146,7 @@
       </view>
       <view wx:for="{{comments}}" wx:key="id" class="comment-entry {{isSharedViewer ? 'is-mine' : ''}}">
         <view class="comment-entry-meta">
-          <text>{{isSharedViewer ? '我的留言' : '一位访客'}}</text>
+          <text>{{isSharedViewer ? '我的留言' : (item.author && item.author.displayName ? item.author.displayName : '一位访客')}}</text>
           <text>{{item.displayTime}}</text>
         </view>
         <view class="comment-entry-paper">{{item.content}}</view>
@@ -154,20 +154,26 @@
     </scroll-view>
 
     <view wx:if="{{isSharedViewer}}" class="comment-composer">
-      <textarea
-        class="comment-input"
-        value="{{commentDraft}}"
-        maxlength="300"
-        auto-height="{{false}}"
-        placeholder="写下一句只给馆主看的话…"
-        placeholder-class="comment-placeholder"
-        bindinput="updateCommentDraft"
-      ></textarea>
-      <button
-        class="comment-submit"
-        disabled="{{!commentDraft || commentSubmitting}}"
-        bindtap="submitComment"
-      >{{commentSubmitting ? '送出中' : '送出'}}</button>
+      <view class="visitor-name-row">
+        <text>留言署名</text>
+        <input value="{{visitorName}}" maxlength="20" placeholder="输入希望馆主看到的名字" bindinput="updateVisitorName" />
+      </view>
+      <view class="comment-compose-row">
+        <textarea
+          class="comment-input"
+          value="{{commentDraft}}"
+          maxlength="300"
+          auto-height="{{false}}"
+          placeholder="写下一句只给馆主看的话…"
+          placeholder-class="comment-placeholder"
+          bindinput="updateCommentDraft"
+        ></textarea>
+        <button
+          class="comment-submit"
+          disabled="{{!visitorName || !commentDraft || commentSubmitting}}"
+          bindtap="submitComment"
+        >{{commentSubmitting ? '送出中' : '送出'}}</button>
+      </view>
     </view>
   </view>
   <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>

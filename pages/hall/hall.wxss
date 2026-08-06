@@ -409,9 +409,9 @@
   display: -webkit-box;
   overflow: hidden;
   color: #665849;
-  font-size: 20rpx;
-  line-height: 1.55;
-  -webkit-line-clamp: 5;
+  font-size: 22rpx;
+  line-height: 1.65;
+  -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
 }
 .text-ellipsis {
@@ -506,8 +506,16 @@
   font-family: var(--font-numeral);
   font-size: 30rpx;
 }
+.selection-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+.delete-selected-button,
 .move-button {
-  width: 260rpx;
+  width: 144rpx;
   height: 65rpx;
   margin: 0;
   padding: 0;
@@ -517,6 +525,24 @@
   font-family: var(--font-display);
   font-size: 22rpx;
   line-height: 65rpx;
+}
+.delete-selected-button {
+  margin: 0;
+  padding: 0;
+  border: 1rpx solid rgba(144,76,58,.34);
+  border-radius: 10rpx;
+  background: rgba(255,250,242,.72);
+  color: rgba(143,79,61,.48);
+  font-family: var(--font-display);
+  font-size: 22rpx;
+  line-height: 63rpx;
+}
+.delete-selected-button.ready {
+  color: #94503f;
+  background: rgba(255,248,238,.96);
+}
+.delete-selected-button::after {
+  border: 0;
 }
 .move-button.ready {
   background: #95682f;

@@ -8,11 +8,28 @@
   <view class="page-title">我的</view>
 
   <view class="identity-card">
-    <view class="avatar">藏</view>
-    <view class="identity-copy">
-      <view class="name">我的人生博物馆</view>
-      <view class="id">馆员编号 No. 00021</view>
+    <view class="avatar">
+      <image wx:if="{{loggedIn && accountUser.avatarFileId}}" src="{{accountUser.avatarFileId}}" mode="aspectFill"></image>
+      <text wx:else>藏</text>
     </view>
+    <view class="identity-copy">
+      <view class="name">{{loggedIn && accountUser.displayName ? accountUser.displayName : '我的人生博物馆'}}</view>
+      <view class="id">{{loggedIn ? '微信账号已连接' : '私人馆藏空间'}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loggedIn}}" class="cloud-login-card">
+    <view class="cloud-login-copy">
+      <view class="cloud-login-title">把人生博物馆保存得更久</view>
+      <view class="cloud-login-description">登录微信账号，可在不同设备上继续查看你的日记。</view>
+    </view>
+    <button bindtap="openAccount">微信登录</button>
+  </view>
+
+  <view wx:else class="cloud-connected-card">
+    <view class="connected-mark">✓</view>
+    <view class="connected-copy"><text>云端账号已连接</text><view>你的微信身份已用于识别这座博物馆</view></view>
+    <button bindtap="confirmLogout">退出登录</button>
   </view>
 
   <view class="menu">
@@ -44,5 +61,11 @@
   </view>
 
   <museum-nav active="profile"></museum-nav>
+  <museum-account
+    visible="{{accountVisible}}"
+    purpose="登录后可保存云端馆藏，并在不同设备上继续访问"
+    bind:cancel="closeAccount"
+    bind:success="handleAccountSuccess"
+  ></museum-account>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 </view>

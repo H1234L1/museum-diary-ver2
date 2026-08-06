@@ -4,11 +4,13 @@ const {
   getMuseumDays,
   formatStat
 } = require('../../services/user-service')
+const { getCurrentUser } = require('../../services/auth-service')
 
 Page({
   data: {
     exhibitCount: '000',
     museumDays: '000',
+    showLoginDot: true,
     entranceCoverVisible: false,
     entranceCoverLeaving: false
   },
@@ -35,6 +37,13 @@ Page({
       exhibitCount: formatStat(getCollectionCount(user)),
       museumDays: formatStat(getMuseumDays(user))
     })
+    try {
+      const account = getApp().globalData.currentUser || await getCurrentUser()
+      getApp().globalData.currentUser = account
+      this.setData({ showLoginDot: !account })
+    } catch (error) {
+      this.setData({ showLoginDot: true })
+    }
 
     if (this.shouldShowTutorialComplete) {
       this.shouldShowTutorialComplete = false

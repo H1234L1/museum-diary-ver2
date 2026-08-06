@@ -1,8 +1,10 @@
 const pad = (value) => String(value).padStart(2, '0')
 const formatDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 const today = formatDate(new Date())
-const { getUser, addItem, updateItem } = require('../../services/user-service')
+const { getUser, addItem, updateItem, createHall } = require('../../services/user-service')
 const { createSpeechRecognitionManager } = require('../../services/speech-recognition-service')
+const { getTutorialState } = require('../../services/tutorial-service')
+const { TUTORIAL_STEPS } = require('../../config/tutorial-steps')
 
 let recorderManager = null
 let speechRecognitionAvailable = false
@@ -23,6 +25,12 @@ Page({
     selectedHallIndex: 0,
     hallOptionListHeight: 105,
     hallSelectorVisible: false,
+    hallCreatorVisible: false,
+    newHallName: '',
+    newHallDescription: '',
+    selectedCover: '',
+    coverOptions: [],
+    creatingHall: false,
     isEditing: false,
     editingId: '',
     originalTitle: '',
@@ -44,6 +52,9 @@ Page({
     voiceButtonText: '按住 说话',
     keyboardKeys: Array.from({ length: 12 }, (_, index) => index),
     tutorialTextCompleted: false,
+    tutorialPhotoPickerVisible: false,
+    audioTitleDialogVisible: false,
+    audioTitleDraft: '',
     toast: ''
   },
 
@@ -96,7 +107,7 @@ Page({
         voiceMode: existing.type === 'audio',
         audio: existing.audio || '',
         audioDurationMs: Math.max(0, Number(existing.audioDurationMs) || 0),
-        voiceButtonText: existing.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+        voiceButtonText: existing.audio ? '录音完成' : '轻触开始录音'
       })
     } else {
       this.setData({ hall })
@@ -128,24 +139,29 @@ Page({
       const pendingAudio = result.tempFilePath || result.filePath || ''
       const pendingTranscript = String(result.result || this.data.liveTranscript || '').trim()
 
-      if (!pendingAudio && !pendingTranscript) {
+      if (!pendingAudio) {
         this.setData({
           recording: false,
           liveTranscript: '',
-          voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+          voiceButtonText: this.data.audio ? '录音完成' : '轻触开始录音'
         })
         this.notice('没有录到声音，请再试一次')
         return
       }
 
-      this.setData({
-        recording: false,
-        pendingAudio,
-        pendingAudioDurationMs: Math.max(0, Number(result.duration) || measuredDuration),
-        pendingTranscript,
-        liveTranscript: '',
-        voiceDecisionVisible: true,
-        voiceButtonText: '录音完成 · 请选择'
+      const audioDurationMs = Math.max(0, Number(result.duration) || measuredDuration)
+      this.persistFile(pendingAudio, (audio) => {
+        this.setData({
+          recording: false,
+          audio,
+          audioDurationMs,
+          pendingAudio: '',
+          pendingAudioDurationMs: 0,
+          pendingTranscript: '',
+          liveTranscript: '',
+          voiceDecisionVisible: false,
+          voiceButtonText: '录音完成'
+        })
       })
     }
     this.handleRecorderError = () => {
@@ -154,7 +170,7 @@ Page({
       this.setData({
         recording: false,
         liveTranscript: '',
-        voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+        voiceButtonText: this.data.audio ? '录音完成' : '轻触开始录音'
       })
       this.notice('录音没有成功，请检查麦克风权限')
     }
@@ -179,6 +195,7 @@ Page({
   },
 
   onUnload() {
+    if (this.tutorialWritingTimer) clearTimeout(this.tutorialWritingTimer)
     if (this.data.recording && recorderManager) recorderManager.stop()
     if (!recorderManager) return
 
@@ -204,9 +221,14 @@ Page({
         hallOptions.findIndex((hall) => hall.name === preferredHall)
       )
       const selectedHall = hallOptions[selectedHallIndex]
+      const coverOptions = ((user && user.items) || [])
+        .filter((item) => item.image)
+        .reduce((images, item) => images.includes(item.image) ? images : [...images, item.image], [])
+        .slice(0, 12)
 
       this.setData({
         hallOptions,
+        coverOptions,
         selectedHallIndex,
         hallOptionListHeight: Math.min(380, hallOptions.length * 105),
         hall: selectedHall.name,
@@ -229,6 +251,7 @@ Page({
 
   closeHallSelector() {
     this.setData({ hallSelectorVisible: false })
+    this.refreshGuide()
   },
 
   stopPropagation() {},
@@ -244,9 +267,81 @@ Page({
       hallId: selectedHall.id || '',
       hallSelectorVisible: false
     })
+    if (selectedHall.name === '主馆') this.completeGuideStep('select-main-hall')
   },
 
-  chooseImage() {
+  openHallCreator() {
+    this.setData({
+      hallSelectorVisible: false,
+      hallCreatorVisible: true,
+      newHallName: '',
+      newHallDescription: '',
+      selectedCover: '',
+      creatingHall: false
+    })
+  },
+
+  closeHallCreator() {
+    if (this.data.creatingHall) return
+    this.setData({ hallCreatorVisible: false, hallSelectorVisible: true })
+  },
+
+  updateNewHallName(e) {
+    this.setData({ newHallName: e.detail.value })
+  },
+
+  updateNewHallDescription(e) {
+    this.setData({ newHallDescription: e.detail.value })
+  },
+
+  chooseDefaultCover() {
+    this.setData({ selectedCover: '' })
+  },
+
+  chooseCover(e) {
+    this.setData({ selectedCover: e.currentTarget.dataset.image })
+  },
+
+  async submitNewHall() {
+    const name = this.data.newHallName.trim()
+    if (!name) {
+      wx.showToast({ title: '请先为副馆取一个名字', icon: 'none' })
+      return
+    }
+    if (this.data.creatingHall) return
+
+    this.setData({ creatingHall: true })
+    try {
+      const hall = await createHall({
+        name,
+        description: this.data.newHallDescription,
+        coverImage: this.data.selectedCover
+      })
+      await this.loadHallOptions(hall.name)
+      this.setData({
+        creatingHall: false,
+        hallCreatorVisible: false,
+        hallSelectorVisible: false
+      })
+      wx.showToast({ title: `已创建并选择${hall.name}`, icon: 'success' })
+      this.refreshGuide()
+    } catch (error) {
+      this.setData({ creatingHall: false })
+      wx.showToast({
+        title: error.message === 'Hall name already exists' ? '已经有同名副馆了' : '创建失败，请重试',
+        icon: 'none'
+      })
+    }
+  },
+
+  async chooseImage() {
+    const tutorialState = await getTutorialState().catch(() => null)
+    const tutorialStep = tutorialState && TUTORIAL_STEPS[tutorialState.stepIndex]
+    if (tutorialState && tutorialState.status === 'active' && tutorialStep && tutorialStep.id === 'add-first-photo') {
+      this.openTutorialPhotoPicker()
+      return
+    }
+
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
@@ -261,18 +356,31 @@ Page({
     })
   },
 
+  openTutorialPhotoPicker() {
+    this.setData({ tutorialPhotoPickerVisible: true })
+  },
+
+  closeTutorialPhotoPicker() {
+    this.setData({ tutorialPhotoPickerVisible: false })
+    this.refreshGuide()
+  },
+
+  confirmTutorialPhoto() {
+    this.setData({
+      image: '/assets/art/home-hero.jpg',
+      tutorialPhotoPickerVisible: false
+    })
+    this.completeGuideStep('add-first-photo')
+  },
+
   toggleVoiceMode() {
     if (this.data.recording) {
       this.notice('请先轻触结束录音')
       return
     }
-    if (this.data.voiceDecisionVisible) {
-      this.notice('请先选择保留语音或转成文字')
-      return
-    }
     this.setData({
       voiceMode: !this.data.voiceMode,
-      voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音'
+      voiceButtonText: this.data.audio ? '录音完成' : '轻触开始录音'
     })
   },
 
@@ -282,7 +390,7 @@ Page({
       return
     }
 
-    if (this.data.voiceDecisionVisible || recorderStopping) return
+    if (recorderStopping) return
     if (this.data.recording) {
       recorderStopping = true
       this.setData({ voiceButtonText: '正在结束录音…' })
@@ -308,7 +416,7 @@ Page({
         pendingAudioDurationMs: 0,
         pendingTranscript: '',
         voiceDecisionVisible: false,
-        voiceButtonText: '已保留语音 · 轻触重录'
+        voiceButtonText: '录音完成'
       })
     })
   },
@@ -362,7 +470,7 @@ Page({
         recorderManager.start(recordingOptions)
       },
       fail: () => {
-        this.setData({ voiceButtonText: this.data.audio ? '已保留语音 · 轻触重录' : '轻触开始录音' })
+        this.setData({ voiceButtonText: this.data.audio ? '录音完成' : '轻触开始录音' })
         wx.showModal({
           title: '需要麦克风权限',
           content: '开启麦克风权限后，才可以把声音收藏进博物馆。',
@@ -378,10 +486,19 @@ Page({
   setStory(e) {
     const story = e.detail.value
     this.setData({ story })
-    if (story.trim() && !this.data.tutorialTextCompleted) {
-      this.setData({ tutorialTextCompleted: true })
-      this.completeGuideStep('write-first-text')
-    }
+    if (this.tutorialWritingTimer) clearTimeout(this.tutorialWritingTimer)
+    if (!story.trim() || this.data.tutorialTextCompleted) return
+
+    this.tutorialWritingTimer = setTimeout(async () => {
+      if (!this.data.story.trim() || this.data.tutorialTextCompleted) return
+      const completed = await this.completeGuideStep('write-first-text')
+      if (!completed) return
+      this.setData({
+        tutorialTextCompleted: true,
+        storyFocused: false,
+        hallSelectorVisible: true
+      })
+    }, 1000)
   },
 
   handleStoryBlur() {
@@ -392,9 +509,12 @@ Page({
   handleTutorialAction(e) {
     const { stepId } = e.detail
     if (stepId === 'add-first-photo') {
-      this.chooseImage()
+      this.openTutorialPhotoPicker()
     } else if (stepId === 'write-first-text') {
       this.setData({ voiceMode: false, storyFocused: true })
+    } else if (stepId === 'select-main-hall') {
+      if (!this.data.hallSelectorVisible) this.openHallSelector()
+      else this.selectHall({ currentTarget: { dataset: { index: 0 } } })
     } else if (stepId === 'save-first-exhibit') {
       this.save()
     }
@@ -465,45 +585,37 @@ Page({
 
   requestAudioTitle() {
     return new Promise((resolve) => {
-      const openTitleDialog = () => {
-        wx.showModal({
-          title: '为声音命名',
-          content: '',
-          editable: true,
-          placeholderText: '请输入语音展品标题',
-          cancelText: '取消',
-          confirmText: '确定',
-          success: ({ confirm, content }) => {
-            if (!confirm) {
-              resolve('')
-              return
-            }
-
-            const title = (content || '').trim()
-            if (title) {
-              resolve(title)
-              return
-            }
-
-            wx.showToast({ title: '请先填写标题', icon: 'none' })
-            setTimeout(openTitleDialog, 350)
-          },
-          fail: () => resolve('')
-        })
-      }
-
-      openTitleDialog()
+      this.audioTitleResolver = resolve
+      this.setData({ audioTitleDialogVisible: true, audioTitleDraft: '' })
     })
+  },
+
+  updateAudioTitleDraft(e) {
+    this.setData({ audioTitleDraft: e.detail.value })
+  },
+
+  finishAudioTitle(title) {
+    const resolve = this.audioTitleResolver
+    this.audioTitleResolver = null
+    this.setData({ audioTitleDialogVisible: false, audioTitleDraft: '' })
+    if (resolve) resolve(title)
+  },
+
+  confirmAudioTitle() {
+    this.finishAudioTitle(this.data.audioTitleDraft.trim())
+  },
+
+  skipAudioTitle() {
+    this.finishAudioTitle('')
+  },
+
+  cancelAudioTitle() {
+    this.finishAudioTitle(null)
   },
 
   async save() {
     if (this.data.recording) {
       this.notice('请先轻触结束录音')
-      return
-    }
-
-    if (this.data.voiceDecisionVisible) {
-      this.notice('请先选择保留语音或转成文字')
       return
     }
 
@@ -518,7 +630,7 @@ Page({
 
     if (this.data.audio && !story && !title) {
       title = await this.requestAudioTitle()
-      if (!title) return
+      if (title === null) return
     }
 
     const record = {

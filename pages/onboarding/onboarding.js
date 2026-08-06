@@ -1,5 +1,5 @@
 const { getUser, createUser } = require('../../services/user-service')
-const { offerTutorial } = require('../../services/tutorial-service')
+const { startTutorial } = require('../../services/tutorial-service')
 
 Page({
   data: {
@@ -29,7 +29,7 @@ Page({
 
     try {
       await createUser()
-      await offerTutorial()
+      await startTutorial()
       const doorAnimation = new Promise((resolve) => {
         this.setData({ doorsOpening: true }, () => setTimeout(resolve, 1500))
       })

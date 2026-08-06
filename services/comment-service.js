@@ -9,14 +9,16 @@ const getComments = async ({ itemId, shareToken }) => {
   return Array.isArray(comments) ? comments : []
 }
 
-const addComment = async ({ shareToken, content }) => {
+const addComment = async ({ shareToken, content, authorName }) => {
   const token = String(shareToken || '').trim()
   const normalizedContent = String(content || '').trim()
-  if (!token || !normalizedContent) throw new Error('Invalid comment')
+  const normalizedAuthorName = String(authorName || '').trim()
+  if (!token || !normalizedContent || !normalizedAuthorName) throw new Error('Invalid comment')
 
   const response = await callFunction('addPrivateComment', {
     token,
-    content: normalizedContent
+    content: normalizedContent,
+    authorName: normalizedAuthorName
   })
   return response.result && response.result.comment
 }

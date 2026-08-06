@@ -12,11 +12,11 @@ const TUTORIAL_STEPS = [
   {
     id: 'add-first-photo',
     route: 'pages/record/record',
-    title: '先放入一张照片',
-    message: '照片会成为这件展品的视觉记忆。点击画框，从相册或相机添加一张图片。',
+    title: '先放入示例照片',
+    message: '第一次收藏先使用博物馆准备的示例照片。完成引导后，你就可以从相册或相机添加自己的照片。',
     targetSelector: '.museum-frame',
     targetPadding: 10,
-    focusHint: '点击画框添加图片',
+    focusHint: '点击画框使用示例照片',
     placement: 'top',
     deferAdvance: true
   },
@@ -34,10 +34,21 @@ const TUTORIAL_STEPS = [
     id: 'write-first-text',
     route: 'pages/record/record',
     title: '写下这一刻',
-    message: '在书写区域记录照片背后的故事。开始输入后，我会带你完成入藏。',
+    message: '在书写区域记录照片背后的故事。停止输入 1 秒后，我会带你选择收藏展馆。',
     targetSelector: '.composer',
     targetPadding: 10,
     focusHint: '点击并写下一段文字',
+    placement: 'top',
+    deferAdvance: true
+  },
+  {
+    id: 'select-main-hall',
+    route: 'pages/record/record',
+    title: '选择收藏展馆',
+    message: '每件展品都需要一个归属。第一次先选择主馆，之后也可以收藏到你创建的副馆。',
+    targetSelector: '.hall-option',
+    targetPadding: 10,
+    focusHint: '选择「主馆」继续',
     placement: 'top',
     deferAdvance: true
   },

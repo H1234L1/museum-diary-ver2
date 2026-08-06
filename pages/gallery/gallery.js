@@ -1,6 +1,7 @@
 const {
   getUser,
   createHall,
+  deleteHalls,
   formatStat
 } = require('../../services/user-service')
 
@@ -23,6 +24,10 @@ Page({
     hallDescription: '',
     selectedCover: '',
     creating: false,
+    selectingHalls: false,
+    selectedHallIds: [],
+    selectedHallMap: {},
+    selectedHallCount: 0,
     toast: ''
   },
 
@@ -133,10 +138,73 @@ Page({
   },
 
   openHall(e) {
+    if (this.suppressHallTapUntil && Date.now() < this.suppressHallTapUntil) return
     const hall = this.data.subHalls[e.currentTarget.dataset.index]
     if (!hall) return
+
+    if (this.data.selectingHalls) {
+      this.toggleHallSelection(hall.id)
+      return
+    }
     wx.navigateTo({
       url: `/pages/showcase/showcase?hall=${encodeURIComponent(hall.name)}&hallId=${encodeURIComponent(hall.id)}`
+    })
+  },
+
+  handleHallLongPress(e) {
+    const hall = this.data.subHalls[e.currentTarget.dataset.index]
+    if (!hall) return
+    this.suppressHallTapUntil = Date.now() + 500
+    const selectedHallMap = this.data.selectingHalls ? { ...this.data.selectedHallMap } : {}
+    selectedHallMap[hall.id] = true
+    const selectedHallIds = Object.keys(selectedHallMap)
+    this.setData({
+      selectingHalls: true,
+      selectedHallMap,
+      selectedHallIds,
+      selectedHallCount: selectedHallIds.length,
+      creatorVisible: false
+    })
+  },
+
+  toggleHallSelection(hallId) {
+    const selectedHallMap = { ...this.data.selectedHallMap }
+    if (selectedHallMap[hallId]) delete selectedHallMap[hallId]
+    else selectedHallMap[hallId] = true
+    const selectedHallIds = Object.keys(selectedHallMap)
+    this.setData({ selectedHallMap, selectedHallIds, selectedHallCount: selectedHallIds.length })
+  },
+
+  cancelHallSelection() {
+    this.setData({
+      selectingHalls: false,
+      selectedHallIds: [],
+      selectedHallMap: {},
+      selectedHallCount: 0
+    })
+  },
+
+  confirmDeleteHalls() {
+    if (!this.data.selectedHallCount) {
+      wx.showToast({ title: '请先选择副馆', icon: 'none' })
+      return
+    }
+    wx.showModal({
+      title: '删除副馆',
+      content: `确定删除选中的 ${this.data.selectedHallCount} 个副馆吗？馆内展品会移回主馆。`,
+      confirmText: '删除',
+      confirmColor: '#9a503e',
+      success: async (result) => {
+        if (!result.confirm) return
+        try {
+          const deleted = await deleteHalls(this.data.selectedHallIds)
+          this.cancelHallSelection()
+          await this.loadGallery()
+          this.notice(`已删除 ${deleted.deletedCount} 个副馆`)
+        } catch (error) {
+          this.notice('删除失败，请重试')
+        }
+      }
     })
   },
 
