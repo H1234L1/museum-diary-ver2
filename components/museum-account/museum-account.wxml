@@ -1,0 +1,12 @@
+<view wx:if="{{visible}}" class="account-mask" bindtap="cancel">
+  <view class="account-card" catchtap="noop">
+    <button class="avatar-button" open-type="chooseAvatar" disabled="{{choosingAvatar || saving}}" bindtap="beginChooseAvatar" bindchooseavatar="chooseAvatar">
+      <image wx:if="{{avatarPath}}" class="avatar-image" src="{{avatarPath}}" mode="aspectFill"></image>
+      <view wx:else class="avatar-placeholder">＋<text class="avatar-placeholder-label">选择头像</text></view>
+    </button>
+    <input class="name-input" type="nickname" value="{{displayName}}" maxlength="20" placeholder="填写你的微信昵称" bindinput="updateName" />
+    <view class="account-note">昵称和头像仅用于标识馆主与留言者；账号权限仍由微信安全身份验证。</view>
+    <button class="login-button" loading="{{saving}}" bindtap="submit">{{saving ? '登录中' : '同意并登录'}}</button>
+    <button class="later-button" disabled="{{saving}}" bindtap="cancel">暂不登录</button>
+  </view>
+</view>

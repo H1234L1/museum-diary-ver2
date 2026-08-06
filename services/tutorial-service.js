@@ -2,7 +2,7 @@ const storage = require('./storage-adapter')
 const { TUTORIAL_STEPS } = require('../config/tutorial-steps')
 
 const TUTORIAL_STORAGE_KEY = 'museum:tutorial:v1'
-const TUTORIAL_VERSION = 3
+const TUTORIAL_VERSION = 4
 
 const createState = (status = 'idle', stepIndex = 0) => ({
   version: TUTORIAL_VERSION,
@@ -55,7 +55,7 @@ const completeTutorial = async () => {
   return saveTutorialState({ ...state, status: 'completed', stepIndex: TUTORIAL_STEPS.length - 1 })
 }
 
-const resetTutorial = async () => offerTutorial()
+const resetTutorial = async () => startTutorial()
 
 module.exports = {
   TUTORIAL_STORAGE_KEY,

@@ -120,6 +120,59 @@ const deleteItem = async (itemId) => {
   return updatedUser
 }
 
+const deleteItems = async (itemIds) => {
+  const user = await getUser()
+  if (!user) throw new Error('User not found')
+
+  const ids = new Set(Array.isArray(itemIds) ? itemIds.filter(Boolean) : [])
+  if (!ids.size) throw new Error('No items selected')
+
+  const items = user.items.filter((item) => !ids.has(item.id))
+  const deletedCount = user.items.length - items.length
+  if (!deletedCount) throw new Error('Items not found')
+
+  const monthlyHighlights = Object.keys(user.monthlyHighlights || {}).reduce((result, monthKey) => {
+    const highlight = user.monthlyHighlights[monthKey]
+    if (!highlight || !ids.has(highlight.itemId)) result[monthKey] = highlight
+    return result
+  }, {})
+
+  const updatedUser = { ...user, items, monthlyHighlights }
+  await saveUser(updatedUser)
+  return { user: updatedUser, deletedCount }
+}
+
+const deleteHalls = async (hallIds) => {
+  const user = await getUser()
+  if (!user) throw new Error('User not found')
+
+  const ids = new Set(Array.isArray(hallIds) ? hallIds.filter(Boolean) : [])
+  if (!ids.size) throw new Error('No halls selected')
+
+  const existingIds = new Set(user.halls.map((hall) => hall.id))
+  const validIds = new Set([...ids].filter((id) => existingIds.has(id)))
+  if (!validIds.size) throw new Error('Halls not found')
+  const deletedHallNames = new Set(
+    user.halls.filter((hall) => validIds.has(hall.id)).map((hall) => hall.name)
+  )
+
+  const halls = user.halls.filter((hall) => !validIds.has(hall.id))
+  let movedItemCount = 0
+  const items = user.items.map((item) => {
+    const belongsToDeletedHall = (item.hallId && validIds.has(item.hallId)) ||
+      (!item.hallId && deletedHallNames.has(item.hall))
+    if (!belongsToDeletedHall) return item
+    movedItemCount += 1
+    const movedItem = { ...item, hall: '主馆' }
+    delete movedItem.hallId
+    return movedItem
+  })
+
+  const updatedUser = { ...user, halls, items }
+  await saveUser(updatedUser)
+  return { user: updatedUser, deletedCount: validIds.size, movedItemCount }
+}
+
 const updateItem = async (itemId, changes) => {
   const user = await getUser()
   if (!user) throw new Error('User not found')
@@ -243,6 +296,8 @@ module.exports = {
   updateItem,
   createHall,
   deleteItem,
+  deleteItems,
+  deleteHalls,
   moveItemsToHall,
   getMonthKey,
   getItemsForMonth,

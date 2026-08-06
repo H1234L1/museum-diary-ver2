@@ -1,5 +1,6 @@
 const { getUser, deleteItem } = require('../../services/user-service')
 const { getComments, addComment } = require('../../services/comment-service')
+const { createShare, getSharedEntry } = require('../../services/share-service')
 
 const formatCommentTime = (timestamp) => {
   const date = new Date(timestamp)
@@ -26,8 +27,13 @@ Page({
     commentsVisible: false,
     isSharedViewer: false,
     commentDraft: '',
+    visitorName: '',
     comments: [],
     commentSubmitting: false,
+    shareToken: '',
+    shareId: '',
+    sharePreparing: false,
+    shareError: '',
     photoStoryVisible: false,
     photoStoryExpandable: false,
     toast: ''
@@ -54,6 +60,38 @@ Page({
         windowInfo.windowHeight - statusBarHeight - Math.max(40, navigationBarHeight)
       )
     })
+
+    if (options.token) {
+      try {
+        const shared = await getSharedEntry(options.token)
+        const record = shared.entry
+        const story = record.story ? String(record.story) : ''
+        const storyLines = story ? story.split(/\r?\n/) : []
+        const type = ['photo', 'text', 'audio'].includes(record.type) ? record.type : 'text'
+
+        this.setData({
+          type,
+          itemId: record.id || '',
+          record,
+          displayDate: record.date ? record.date.replace(/-/g, '.') : '',
+          exhibitNumber: record.exhibitNumber || '----',
+          photoStoryExpandable: type === 'photo' && (
+            storyLines.length > 3 || Array.from(story).length > 54
+          ),
+          isSharedViewer: !shared.isOwner,
+          shareToken: options.token,
+          shareId: shared.shareId || '',
+          returnHall: record.hall || '主馆'
+        })
+        const visitorName = wx.getStorageSync(`museum:visitor-name:${options.token}`) || ''
+        this.setData({ visitorName })
+        this.setupAudio(record)
+        return
+      } catch (error) {
+        this.notice('这件展品暂时无法打开')
+        return
+      }
+    }
 
     const user = await getUser()
     const record = options.id && user
@@ -88,6 +126,9 @@ Page({
       returnHallId: (record && record.hallId) || options.hallId || ''
     })
 
+    this.setupAudio(record)
+  },
+  setupAudio(record) {
     if (record && record.audio && wx.createInnerAudioContext) {
       this.audioContext = wx.createInnerAudioContext()
       this.audioContext.src = record.audio
@@ -163,14 +204,22 @@ Page({
       this.notice('暂时找不到这件展品')
       return
     }
-    const comments = await getComments({ itemId, ownerView: !this.data.isSharedViewer })
-    this.setData({
-      commentsVisible: true,
-      comments: comments.map((item) => ({
-        ...item,
-        displayTime: formatCommentTime(item.createdAt)
-      }))
-    })
+    try {
+      const comments = await getComments({
+        itemId,
+        shareToken: this.data.shareToken
+      })
+      this.setData({
+        commentsVisible: true,
+        comments: comments.map((item) => ({
+          ...item,
+          displayTime: formatCommentTime(item.createdAt)
+        }))
+      })
+    } catch (error) {
+      console.error('getComments failed', error)
+      this.notice('留言暂时无法打开')
+    }
   },
   closeComments() {
     this.setData({ commentsVisible: false, commentDraft: '' })
@@ -186,15 +235,27 @@ Page({
   updateCommentDraft(e) {
     this.setData({ commentDraft: e.detail.value })
   },
+  updateVisitorName(e) {
+    this.setData({ visitorName: e.detail.value })
+  },
   async submitComment() {
     const content = this.data.commentDraft.trim()
+    const authorName = this.data.visitorName.trim()
     const itemId = this.data.itemId
+    if (!authorName) {
+      this.notice('请先填写留言署名')
+      return
+    }
     if (!content || !itemId || this.data.commentSubmitting || !this.data.isSharedViewer) return
 
     this.setData({ commentSubmitting: true })
     try {
-      await addComment({ itemId, content })
-      const comments = await getComments({ itemId, ownerView: false })
+      await addComment({ shareToken: this.data.shareToken, content, authorName })
+      wx.setStorageSync(`museum:visitor-name:${this.data.shareToken}`, authorName)
+      const comments = await getComments({
+        itemId,
+        shareToken: this.data.shareToken
+      })
       this.setData({
         commentDraft: '',
         commentSubmitting: false,
@@ -210,12 +271,43 @@ Page({
     }
   },
   toggleActionsMenu() {
-    this.setData({ actionsMenuVisible: !this.data.actionsMenuVisible })
+    const actionsMenuVisible = !this.data.actionsMenuVisible
+    this.setData({ actionsMenuVisible })
+    if (actionsMenuVisible && !this.data.shareToken && !this.data.sharePreparing) {
+      this.prepareShare()
+    }
+  },
+  async prepareShare() {
+    const record = this.data.record
+    if (!record || !record.id || this.data.sharePreparing) return
+
+    this.setData({ sharePreparing: true, shareError: '' })
+    try {
+      const share = await createShare({
+        record,
+        exhibitNumber: this.data.exhibitNumber
+      })
+      this.setData({
+        shareToken: share.token,
+        shareId: share.shareId,
+        sharePreparing: false
+      })
+    } catch (error) {
+      console.error('prepareShare failed', error)
+      this.setData({ sharePreparing: false, shareError: error.message || 'SHARE_FAILED' })
+      this.notice('分享准备失败，请重试')
+    }
+  },
+  handleShareTap() {
+    if (this.data.sharePreparing) this.notice('正在准备展品，请稍候')
+    else if (!this.data.shareToken) this.prepareShare()
+    else this.closeActionsMenu()
   },
   closeActionsMenu() {
     this.setData({ actionsMenuVisible: false })
   },
   confirmDelete() {
+    this.setData({ actionsMenuVisible: false })
     const record = this.data.record
     if (!record || !record.id || this.data.deleting) return
 
@@ -245,12 +337,12 @@ Page({
     setTimeout(() => this.setData({ toast: '' }), 1600)
   },
   onShareAppMessage() {
-    const id = this.data.record && this.data.record.id
-      ? `&id=${this.data.record.id}`
-      : ''
+    const token = this.data.shareToken
     return {
       title: '人生博物馆 · 展品详情',
-      path: `/pages/detail/detail?type=${this.data.type}${id}&shared=1`
+      path: token
+        ? `/pages/detail/detail?token=${encodeURIComponent(token)}`
+        : '/pages/index/index'
     }
   }
 })

@@ -34,7 +34,13 @@
     <view class="gallery-subtitle">{{hallSubtitle}}</view>
   </view>
 
-  <view wx:if="{{hasItems}}" class="frame-gallery {{transitionClass}}">
+  <view
+    wx:if="{{hasItems}}"
+    class="frame-gallery {{transitionClass}}"
+    bindtouchstart="onGalleryTouchStart"
+    bindtouchend="onGalleryTouchEnd"
+    bindtouchcancel="onGalleryTouchCancel"
+  >
     <view
       wx:for="{{displayItems}}"
       wx:key="renderKey"

@@ -56,7 +56,8 @@ Component({
     async syncGuide() {
       try {
         if (this.autoFocusTimer) clearTimeout(this.autoFocusTimer)
-        const state = await getTutorialState()
+        let state = await getTutorialState()
+        if (state.status === 'offered') state = await startTutorial()
         const step = TUTORIAL_STEPS[state.stepIndex]
         const offerVisible = state.status === 'offered' && getCurrentRoute() === 'pages/index/index'
         const visible = state.status === 'active' && step && step.route === getCurrentRoute()

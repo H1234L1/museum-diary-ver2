@@ -27,10 +27,12 @@
     <view
       wx:for="{{subHalls}}"
       wx:key="id"
-      class="created-hall-card"
+      class="created-hall-card {{selectedHallMap[item.id] ? 'selected' : ''}}"
       data-index="{{index}}"
       bindtap="openHall"
+      bindlongpress="handleHallLongPress"
     >
+      <view wx:if="{{selectingHalls}}" class="hall-selection-marker {{selectedHallMap[item.id] ? 'checked' : ''}}">{{selectedHallMap[item.id] ? '✓' : ''}}</view>
       <image wx:if="{{item.displayCover}}" src="{{item.displayCover}}" mode="aspectFill"></image>
       <view wx:else class="default-cover"><view class="cover-arch"></view></view>
       <view class="created-overlay"></view>
@@ -42,7 +44,7 @@
       <view class="mini-arrow">›</view>
     </view>
 
-    <view class="create-hall-card {{subHalls.length ? 'compact' : 'empty'}}" bindtap="openCreator">
+    <view wx:if="{{!selectingHalls}}" class="create-hall-card {{subHalls.length ? 'compact' : 'empty'}}" bindtap="openCreator">
       <view class="create-plus">＋</view>
       <view class="create-title">创建副馆</view>
       <text wx:if="{{!subHalls.length}}">为一组特别的记忆，留出一间展厅</text>
@@ -50,6 +52,13 @@
   </view>
 
   <view class="gallery-bottom-space"></view>
+  <view wx:if="{{selectingHalls}}" class="hall-selection-dock">
+    <view class="hall-selection-summary">已选 <text>{{selectedHallCount}}</text> 个副馆</view>
+    <view class="hall-selection-actions">
+      <button class="hall-cancel-button" bindtap="cancelHallSelection">取消</button>
+      <button class="hall-delete-button {{selectedHallCount ? 'ready' : ''}}" bindtap="confirmDeleteHalls">删除</button>
+    </view>
+  </view>
   <museum-guide id="museumGuide" bind:action="handleTutorialAction"></museum-guide>
   <museum-nav id="museumNav" active="gallery"></museum-nav>
 

@@ -1,4 +1,4 @@
-const { getUser, createHall, moveItemsToHall } = require('../../services/user-service')
+const { getUser, createHall, moveItemsToHall, deleteItems } = require('../../services/user-service')
 
 const TYPE_LABELS = {
   photo: '图片',
@@ -37,7 +37,7 @@ const groupItems = (items) => {
       ...item,
       type,
       category: TYPE_LABELS[type],
-      title: item.title || '未命名展品',
+      title: item.title || (type === 'audio' ? '未命名声音' : ''),
       excerpt: item.story || '这件展品还没有文字说明。',
       image: item.image || DEFAULT_IMAGES[type],
       duration: item.duration || '00:42'
@@ -64,7 +64,7 @@ const filterHallItems = (items, activeFilter, searchQuery) => {
     if (!normalizedQuery) return true
 
     const searchableText = [
-      item.title || '未命名展品',
+      item.title || '',
       item.story || '',
       TYPE_LABELS[type]
     ].join(' ').toLowerCase()
@@ -244,6 +244,7 @@ Page({
   handleExhibitTap(e) {
     const { id, type } = e.currentTarget.dataset
     if (!id) return
+    if (this.suppressExhibitTapUntil && Date.now() < this.suppressExhibitTapUntil) return
 
     if (!this.data.selecting) {
       wx.navigateTo({ url: `/pages/detail/detail?type=${type || 'text'}&id=${id}` })
@@ -255,6 +256,55 @@ Page({
     else selectedMap[id] = true
     const selectedIds = Object.keys(selectedMap)
     this.setData({ selectedMap, selectedIds, selectedCount: selectedIds.length })
+  },
+
+  handleExhibitLongPress(e) {
+    const { id } = e.currentTarget.dataset
+    if (!id) return
+
+    this.suppressExhibitTapUntil = Date.now() + 500
+    const selectedMap = this.data.selecting ? { ...this.data.selectedMap } : {}
+    selectedMap[id] = true
+    const selectedIds = Object.keys(selectedMap)
+    this.setData({
+      selecting: true,
+      selectedMap,
+      selectedIds,
+      selectedCount: selectedIds.length,
+      targetSheetVisible: false,
+      filterMenuVisible: false
+    })
+  },
+
+  confirmDeleteSelected() {
+    if (!this.data.selectedCount) {
+      wx.showToast({ title: '请先选择展品', icon: 'none' })
+      return
+    }
+
+    wx.showModal({
+      title: '删除展品',
+      content: `确定删除选中的 ${this.data.selectedCount} 件展品吗？删除后无法恢复。`,
+      confirmText: '删除',
+      confirmColor: '#9a503e',
+      success: async (result) => {
+        if (!result.confirm) return
+        try {
+          const deleted = await deleteItems(this.data.selectedIds)
+          this.setData({
+            selecting: false,
+            selectedIds: [],
+            selectedMap: {},
+            selectedCount: 0,
+            targetSheetVisible: false
+          })
+          await this.loadHall()
+          wx.showToast({ title: `已删除 ${deleted.deletedCount} 件`, icon: 'success' })
+        } catch (error) {
+          wx.showToast({ title: '删除失败，请重试', icon: 'none' })
+        }
+      }
+    })
   },
 
   openMoveTargets() {

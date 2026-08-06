@@ -1,7 +1,8 @@
 {
-  "appid": "wx2fa2d034fa861278",
+  "appid": "wx77faff1a57b51e70",
   "compileType": "miniprogram",
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "libVersion": "3.16.2",
   "packOptions": {
     "ignore": [
@@ -24,6 +25,30 @@
       {
         "value": "assets/screen",
         "type": "folder"
+      },
+      {
+        "value": "cloudfunctions",
+        "type": "folder"
+      },
+      {
+        "value": "assets/art/hall-friends.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/art/hall-summer.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/art/hall-travel.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/art/month-book.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/art/today-city.jpg",
+        "type": "file"
       }
     ],
     "include": []
@@ -59,5 +84,6 @@
     "tabIndent": "auto",
     "tabSize": 2
   },
-  "simulatorPluginLibVersion": {}
+  "simulatorPluginLibVersion": {},
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }
