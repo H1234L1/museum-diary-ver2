@@ -213,7 +213,9 @@ Page({
     dataPanelTone: 'dark',
     designerVisible: false,
     designerTab: 'layout',
-    savingDesign: false
+    savingDesign: false,
+    sharePanelVisible: false,
+    savingLocalPhoto: false
   },
 
   async onLoad(options = {}) {
@@ -300,6 +302,50 @@ Page({
       return
     }
     this.setData({ designerVisible: true, designerTab: 'photo' })
+  },
+
+  openSharePanel() {
+    this.setData({ sharePanelVisible: true })
+  },
+
+  closeSharePanel() {
+    if (this.data.savingLocalPhoto) return
+    this.setData({ sharePanelVisible: false })
+  },
+
+  saveLocalPhoto() {
+    if (this.data.savingLocalPhoto) return
+    const source = this.data.backgroundImage
+    if (!source) {
+      wx.showToast({ title: '暂时没有可保存的照片', icon: 'none' })
+      return
+    }
+
+    this.setData({ savingLocalPhoto: true })
+    wx.showLoading({ title: '正在保存' })
+    wx.getImageInfo({
+      src: source,
+      success: ({ path }) => {
+        wx.saveImageToPhotosAlbum({
+          filePath: path,
+          success: () => {
+            this.setData({ savingLocalPhoto: false, sharePanelVisible: false })
+            wx.hideLoading()
+            wx.showToast({ title: '已保存到相册', icon: 'success' })
+          },
+          fail: () => {
+            this.setData({ savingLocalPhoto: false })
+            wx.hideLoading()
+            wx.showToast({ title: '需要相册权限才能保存', icon: 'none' })
+          }
+        })
+      },
+      fail: () => {
+        this.setData({ savingLocalPhoto: false })
+        wx.hideLoading()
+        wx.showToast({ title: '照片读取失败，请重试', icon: 'none' })
+      }
+    })
   },
 
   openDesigner() {

@@ -4,10 +4,7 @@
       <view class="back-chevron"></view>
     </view>
     <view class="report-nav-title">月度馆藏</view>
-    <button class="nav-button share-button" open-type="share" catchtap="stopPropagation" aria-label="分享月报">
-      <view class="share-arrow"></view>
-      <view class="share-tray"></view>
-    </button>
+    <view class="report-nav-spacer"></view>
   </view>
 
   <view
@@ -128,8 +125,35 @@
   </view>
 
   <view class="design-trigger" catchtap="openDesigner" aria-label="编辑月报样式">
-    <view class="sliders-icon"><text></text><text></text><text></text></view>
-    <view>样式</view>
+    <view>编辑</view>
+  </view>
+
+  <view class="report-share-trigger" catchtap="openSharePanel" aria-label="分享月报">
+    <view class="share-arrow"></view>
+    <view>分享</view>
+  </view>
+
+  <view wx:if="{{sharePanelVisible}}" class="share-panel-mask" catchtap="closeSharePanel">
+    <view class="share-panel" catchtap="stopPropagation">
+      <view class="share-panel-handle"></view>
+      <view class="share-panel-title">留存这份月报</view>
+      <view class="share-panel-subtitle">保存珍藏，或分享给一位朋友</view>
+      <view class="share-panel-actions">
+        <view class="share-panel-action" catchtap="saveLocalPhoto">
+          <view class="share-panel-icon save-photo-icon"><view></view></view>
+          <view class="share-panel-action-title">保存本地照片</view>
+          <view class="share-panel-action-note">存入手机相册</view>
+        </view>
+        <button class="share-panel-action" open-type="share" bindtap="closeSharePanel">
+          <view class="share-panel-icon friend-share-icon">
+            <view class="friend-share-line"></view>
+            <view class="friend-share-tip"></view>
+          </view>
+          <view class="share-panel-action-title">分享给朋友</view>
+          <view class="share-panel-action-note">发送月报链接</view>
+        </button>
+      </view>
+    </view>
   </view>
 
   <view wx:if="{{designerVisible}}" class="designer-mask" catchtap="closeDesigner">
