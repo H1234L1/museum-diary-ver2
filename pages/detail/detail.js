@@ -27,6 +27,7 @@ Page({
     commentsVisible: false,
     isSharedViewer: false,
     commentDraft: '',
+    visitorName: '',
     comments: [],
     commentSubmitting: false,
     shareToken: '',
@@ -82,6 +83,8 @@ Page({
           shareId: shared.shareId || '',
           returnHall: record.hall || '主馆'
         })
+        const visitorName = wx.getStorageSync(`museum:visitor-name:${options.token}`) || ''
+        this.setData({ visitorName })
         this.setupAudio(record)
         return
       } catch (error) {
@@ -222,14 +225,23 @@ Page({
   updateCommentDraft(e) {
     this.setData({ commentDraft: e.detail.value })
   },
+  updateVisitorName(e) {
+    this.setData({ visitorName: e.detail.value })
+  },
   async submitComment() {
     const content = this.data.commentDraft.trim()
+    const authorName = this.data.visitorName.trim()
     const itemId = this.data.itemId
+    if (!authorName) {
+      this.notice('请先填写留言署名')
+      return
+    }
     if (!content || !itemId || this.data.commentSubmitting || !this.data.isSharedViewer) return
 
     this.setData({ commentSubmitting: true })
     try {
-      await addComment({ shareToken: this.data.shareToken, content })
+      await addComment({ shareToken: this.data.shareToken, content, authorName })
+      wx.setStorageSync(`museum:visitor-name:${this.data.shareToken}`, authorName)
       const comments = await getComments({
         itemId,
         shareToken: this.data.shareToken
@@ -285,6 +297,7 @@ Page({
     this.setData({ actionsMenuVisible: false })
   },
   confirmDelete() {
+    this.setData({ actionsMenuVisible: false })
     const record = this.data.record
     if (!record || !record.id || this.data.deleting) return
 

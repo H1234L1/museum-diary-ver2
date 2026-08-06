@@ -13,6 +13,7 @@
         <view class="profile-icon-head"></view>
         <view class="profile-icon-body"></view>
       </view>
+      <view wx:if="{{showLoginDot}}" class="login-reminder-dot"></view>
     </navigator>
     <view class="museum-title">
       <view>人生博物馆</view>

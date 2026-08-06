@@ -10,7 +10,8 @@ exports.main = async () => {
   const names = [
     'shared_entries',
     'share_links',
-    'private_comments'
+    'private_comments',
+    'users'
   ]
 
   const results = []

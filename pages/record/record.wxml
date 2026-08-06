@@ -30,21 +30,7 @@
     </view>
   </view>
 
-  <view wx:if="{{voiceDecisionVisible}}" class="voice-decision">
-    <view class="voice-decision-bubble keep-voice" bindtap="keepVoice">
-      <view class="voice-decision-title">保留语音</view>
-      <view class="voice-decision-copy">作为声音展品</view>
-    </view>
-    <view
-      class="voice-decision-bubble convert-text {{speechRecognitionAvailable && pendingTranscript ? '' : 'is-unavailable'}}"
-      bindtap="convertVoiceToText"
-    >
-      <view class="voice-decision-title">转文字</view>
-      <view class="voice-decision-copy">追加到文字记录</view>
-    </view>
-  </view>
-
-  <view class="composer {{voiceMode ? 'voice-mode' : ''}} {{voiceDecisionVisible ? 'has-decision' : ''}}">
+  <view class="composer {{voiceMode ? 'voice-mode' : ''}}">
     <view class="mode-toggle" bindtap="toggleVoiceMode">
       <view wx:if="{{!voiceMode}}" class="speech-icon">
         <view class="sound-dot"></view>
@@ -96,7 +82,44 @@
   <museum-nav active="record"></museum-nav>
   <view wx:if="{{toast}}" class="toast">{{toast}}</view>
 
-  <view wx:if="{{hallSelectorVisible}}" class="hall-selector-mask" bindtap="closeHallSelector">
+  <view wx:if="{{tutorialPhotoPickerVisible}}" class="tutorial-photo-mask">
+    <view class="tutorial-photo-card">
+      <view class="tutorial-photo-kicker">FIRST EXHIBIT</view>
+      <view class="tutorial-photo-title">选择示例照片</view>
+      <view class="tutorial-photo-copy">第一次入藏，先从博物馆为你准备的照片开始。</view>
+      <view class="tutorial-photo-frame">
+        <image src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
+        <view class="tutorial-photo-label">默认照片 · 博物馆展厅</view>
+        <view class="tutorial-photo-check">✓</view>
+      </view>
+      <button class="tutorial-photo-confirm" bindtap="confirmTutorialPhoto">选择这张照片</button>
+      <button class="tutorial-photo-back" bindtap="closeTutorialPhotoPicker">返回上一步</button>
+    </view>
+  </view>
+
+  <view wx:if="{{audioTitleDialogVisible}}" class="audio-title-mask" bindtap="cancelAudioTitle">
+    <view class="audio-title-card" catchtap="stopPropagation">
+      <view class="audio-title-kicker">AUDIO EXHIBIT</view>
+      <view class="audio-title-heading">为声音留个名字</view>
+      <view class="audio-title-copy">标题不是必填，也可以直接将这段声音入藏。</view>
+      <view class="audio-title-field">
+        <view class="audio-title-note">♪</view>
+        <input
+          value="{{audioTitleDraft}}"
+          maxlength="30"
+          focus="{{audioTitleDialogVisible}}"
+          placeholder="例如：夏夜的雨声"
+          confirm-type="done"
+          bindinput="updateAudioTitleDraft"
+          bindconfirm="confirmAudioTitle"
+        />
+      </view>
+      <button class="audio-title-confirm" bindtap="confirmAudioTitle">{{audioTitleDraft ? '保存名字并入藏' : '直接入藏'}}</button>
+      <button class="audio-title-skip" bindtap="skipAudioTitle">暂不命名</button>
+    </view>
+  </view>
+
+  <view wx:if="{{hallSelectorVisible}}" class="hall-selector-mask {{tutorialTextCompleted ? 'tutorial-selector' : ''}}" bindtap="closeHallSelector">
     <view class="hall-selector-sheet" catchtap="stopPropagation">
       <view class="selector-handle"></view>
       <view class="selector-title">选择收藏展馆</view>
@@ -117,7 +140,50 @@
         </view>
       </scroll-view>
 
+      <view class="create-hall-option" bindtap="openHallCreator">
+        <view class="create-hall-plus">＋</view>
+        <view class="create-hall-copy">新建副馆</view>
+        <view class="hall-option-chevron">›</view>
+      </view>
+
       <button class="selector-cancel" bindtap="closeHallSelector">取消</button>
+    </view>
+  </view>
+
+  <view wx:if="{{hallCreatorVisible}}" class="hall-creator-mask" bindtap="closeHallCreator">
+    <view class="hall-creator-sheet" catchtap="stopPropagation">
+      <view class="selector-handle"></view>
+      <view class="creator-heading">
+        <view>
+          <view class="creator-kicker">NEW GALLERY</view>
+          <view class="creator-title">创建一间副馆</view>
+        </view>
+        <view class="creator-close" bindtap="closeHallCreator">×</view>
+      </view>
+      <view class="creator-note">创建后，这件展品将直接收藏到新的副馆。</view>
+
+      <view class="creator-field-label">副馆名称 <text>必填</text></view>
+      <input class="creator-input" value="{{newHallName}}" maxlength="12" placeholder="例如：夏日碎片" bindinput="updateNewHallName" />
+
+      <view class="creator-field-label">一句简介 <text>选填</text></view>
+      <input class="creator-input" value="{{newHallDescription}}" maxlength="24" placeholder="这间展厅收藏着什么？" bindinput="updateNewHallDescription" />
+
+      <view class="creator-field-label creator-cover-label">选择封面 <text>选填</text></view>
+      <scroll-view class="creator-cover-list" scroll-x="true" show-scrollbar="false">
+        <view class="creator-cover-row">
+          <view class="creator-cover-choice default-cover-choice {{!selectedCover ? 'selected' : ''}}" bindtap="chooseDefaultCover">
+            <view class="creator-small-arch"></view><text>默认</text>
+          </view>
+          <view wx:for="{{coverOptions}}" wx:key="*this" class="creator-cover-choice {{selectedCover === item ? 'selected' : ''}}" data-image="{{item}}" bindtap="chooseCover">
+            <image src="{{item}}" mode="aspectFill"></image>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="creator-actions">
+        <button class="creator-cancel" bindtap="closeHallCreator">取消</button>
+        <button class="creator-submit" loading="{{creatingHall}}" bindtap="submitNewHall">创建并选择</button>
+      </view>
     </view>
   </view>
 </view>

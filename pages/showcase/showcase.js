@@ -1,12 +1,14 @@
 const { getUser } = require('../../services/user-service')
 
 const getItemTime = (item) => {
+  const createdTime = new Date(item.createdAt || 0).getTime()
+  if (!Number.isNaN(createdTime) && createdTime > 0) return createdTime
+
   if (item.date) {
     const dateTime = new Date(`${item.date}T00:00:00`).getTime()
     if (!Number.isNaN(dateTime)) return dateTime
   }
-  const createdTime = new Date(item.createdAt || 0).getTime()
-  return Number.isNaN(createdTime) ? 0 : createdTime
+  return 0
 }
 
 const normalizeItems = (items) => items
@@ -145,6 +147,35 @@ Page({
     this.switchExhibit((this.data.currentIndex + 1) % total, 'next')
   },
 
+  onGalleryTouchStart(e) {
+    const touch = e.touches && e.touches[0]
+    if (!touch || this.data.isTransitioning) return
+    this.galleryTouchStart = {
+      x: touch.clientX,
+      y: touch.clientY
+    }
+  },
+
+  onGalleryTouchEnd(e) {
+    if (!this.galleryTouchStart || this.data.isTransitioning) return
+    const touch = e.changedTouches && e.changedTouches[0]
+    if (!touch) return
+
+    const deltaX = touch.clientX - this.galleryTouchStart.x
+    const deltaY = touch.clientY - this.galleryTouchStart.y
+    this.galleryTouchStart = null
+
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) <= Math.abs(deltaY)) return
+
+    this.gallerySuppressTapUntil = Date.now() + 350
+    if (deltaX < 0) this.showNext()
+    else this.showPrevious()
+  },
+
+  onGalleryTouchCancel() {
+    this.galleryTouchStart = null
+  },
+
   switchExhibit(nextIndex, direction) {
     const { items, currentIndex } = this.data
     const total = items.length
@@ -210,6 +241,7 @@ Page({
   },
 
   openExhibit(e) {
+    if (Date.now() < (this.gallerySuppressTapUntil || 0)) return
     const { id, type } = e.currentTarget.dataset
     if (type === 'add' || id === '__add_exhibit__') {
       this.addExhibit()

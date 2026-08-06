@@ -18,10 +18,12 @@ exports.main = async (event = {}) => {
   const { OPENID } = cloud.getWXContext()
   const token = String(event.token || '').trim()
   const content = String(event.content || '').trim()
+  const authorName = String(event.authorName || '').trim()
 
   if (!OPENID) throw new Error('UNAUTHENTICATED')
   if (!/^[a-f0-9]{64}$/.test(token)) throw new Error('INVALID_SHARE_TOKEN')
   if (!content || content.length > 500) throw new Error('INVALID_COMMENT')
+  if (!authorName || authorName.length > 20) throw new Error('INVALID_AUTHOR_NAME')
 
   const share = await getShareByToken(token)
   if (!share || !share.enabled || share.revokedAt) throw new Error('SHARE_UNAVAILABLE')
@@ -45,6 +47,7 @@ exports.main = async (event = {}) => {
       originalEntryId: entry.originalEntryId,
       ownerOpenId: entry.ownerOpenId,
       authorOpenId: OPENID,
+      authorName,
       content,
       createdAt: db.serverDate()
     }
@@ -53,6 +56,7 @@ exports.main = async (event = {}) => {
   return {
     comment: {
       id: result._id,
+      authorName,
       content,
       createdAt: Date.now()
     }

@@ -1,0 +1,11 @@
+.account-mask { position: fixed; inset: 0; z-index: 900; display: flex; align-items: center; justify-content: center; padding: 44rpx; box-sizing: border-box; background: rgba(38,29,21,.62); backdrop-filter: blur(5rpx); }
+.account-card { width: 100%; padding: 45rpx 42rpx 32rpx; box-sizing: border-box; border: 2rpx solid rgba(174,133,79,.48); border-radius: 26rpx; text-align: center; background: repeating-linear-gradient(45deg,rgba(125,95,59,.02) 0,rgba(125,95,59,.02) 1rpx,transparent 1rpx,transparent 8rpx),linear-gradient(145deg,#fbf5e9,#eadbc5); box-shadow: 0 28rpx 70rpx rgba(35,24,14,.34),inset 0 0 0 6rpx rgba(255,251,241,.5); }
+.avatar-button { display: block; width: 132rpx; min-width: 132rpx; max-width: 132rpx; height: 132rpx; min-height: 132rpx; margin: 0 auto 28rpx; padding: 0; box-sizing: border-box; overflow: hidden; border: 6rpx double #c4a77b; border-radius: 50%; background: #e2d1b8; line-height: 1; }
+.avatar-button::after,.login-button::after,.later-button::after { border: 0; }
+.avatar-image { width: 100%; height: 100%; display: block; }
+.avatar-placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #88663f; font-size: 40rpx; line-height: 1; }
+.avatar-placeholder-label { margin-top: 9rpx; font-size: 17rpx; }
+.name-input { height: 84rpx; padding: 0 24rpx; border: 1rpx solid rgba(137,104,64,.32); border-radius: 11rpx; text-align: center; color: #382e25; background: rgba(255,252,246,.72); font-size: 28rpx; }
+.account-note { margin: 22rpx 10rpx 28rpx; color: #8b7965; font-size: 19rpx; line-height: 1.65; }
+.login-button { width: 330rpx; height: 84rpx; margin: 0 auto; padding: 0; display: block; color: #fffaf0; background: linear-gradient(135deg,#ad8651,#805a2d); font-size: 28rpx; line-height: 84rpx; letter-spacing: 4rpx; text-align: center; }
+.later-button { height: 66rpx; margin: 12rpx 0 0; color: #806d58; background: transparent; font-size: 22rpx; line-height: 66rpx; }
