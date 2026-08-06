@@ -28,7 +28,25 @@
   width: 100%;
   height: 650rpx;
   filter: drop-shadow(0 17rpx 22rpx rgba(77,53,28,.2));
+  transform-origin: center center;
+  transition: filter .25s ease;
 }
+.admission-target.is-admitting { position: relative; z-index: 701; pointer-events: none; animation: exhibit-admit 1.25s cubic-bezier(.2,.72,.22,1) both; }
+.admission-target.is-admitting.is-leaving { animation: exhibit-exit-left .32s cubic-bezier(.55,.08,.72,.42) both; }
+.admission-room-wash { position: fixed; inset: 0; z-index: 700; pointer-events: auto; background: radial-gradient(circle at 50% 34%,rgba(255,245,210,.08),rgba(50,38,27,.38) 72%); animation: room-dim 1.25s ease both; }
+.admission-glass { position: absolute; inset: 20rpx; z-index: 8; overflow: hidden; border-radius: 3rpx; background: linear-gradient(145deg,rgba(255,255,255,.02),rgba(230,213,180,.12)); box-shadow: inset 0 0 0 2rpx rgba(255,248,225,.55),inset 0 0 32rpx rgba(255,238,194,.18); animation: glass-close .55s ease-out both; }
+.admission-case-edge { position: absolute; inset: 0; border: 4rpx double rgba(228,204,158,.72); box-sizing: border-box; box-shadow: inset 0 0 22rpx rgba(78,55,31,.18); }
+.admission-light { position: absolute; top: -35%; left: -55%; width: 38%; height: 170%; z-index: 2; transform: rotate(18deg); background: linear-gradient(90deg,transparent,rgba(255,250,225,.78),transparent); filter: blur(4rpx); animation: admission-light-sweep .72s .22s ease-in-out both; }
+.admission-stamp { position: absolute; right: 28rpx; bottom: 28rpx; z-index: 4; padding: 13rpx 18rpx 11rpx; border: 4rpx double rgba(132,87,38,.88); color: #79542d; background: rgba(249,237,212,.87); font-size: 21rpx; font-weight: 500; letter-spacing: 2rpx; opacity: 0; transform: rotate(-7deg) scale(1.5); box-shadow: 0 5rpx 13rpx rgba(57,38,20,.17); }
+.admission-stamp.is-visible { animation: admission-stamp-in .34s cubic-bezier(.2,1.45,.45,1) forwards; }
+.admission-glass.compact { inset: -10rpx; border-radius: 16rpx; }
+.admission-glass.compact .admission-stamp { right: 13rpx; bottom: 10rpx; padding: 7rpx 11rpx 6rpx; font-size: 17rpx; letter-spacing: 1rpx; }
+@keyframes exhibit-admit { 0% { transform: translateY(0) scale(1); filter: drop-shadow(0 17rpx 22rpx rgba(77,53,28,.2)) brightness(1); } 48% { transform: translateY(-5rpx) scale(.91); filter: drop-shadow(0 25rpx 30rpx rgba(48,32,18,.26)) brightness(1.08); } 100% { transform: translateY(-10rpx) scale(.82); filter: drop-shadow(0 30rpx 38rpx rgba(38,25,14,.32)) brightness(.94); } }
+@keyframes room-dim { 0% { opacity: 0; } 35%,75% { opacity: 1; } 100% { opacity: .78; } }
+@keyframes glass-close { 0% { opacity: 0; transform: scaleX(1.08); } 100% { opacity: 1; transform: scaleX(1); } }
+@keyframes admission-light-sweep { 0% { left: -55%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: .9; } 100% { left: 125%; opacity: 0; } }
+@keyframes admission-stamp-in { 0% { opacity: 0; transform: rotate(-7deg) scale(1.5); } 70% { opacity: 1; transform: rotate(-7deg) scale(.94); } 100% { opacity: 1; transform: rotate(-7deg) scale(1); } }
+@keyframes exhibit-exit-left { 0% { opacity: 1; transform: translateX(0) translateY(-10rpx) scale(.82); } 100% { opacity: 0; transform: translateX(-64vw) translateY(-10rpx) scale(.78); } }
 .frame-outer {
   position: absolute;
   inset: 0;

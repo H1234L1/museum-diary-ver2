@@ -18,6 +18,7 @@ Page({
     navigationBarHeight: 44,
     textGalleryHeight: 600,
     openedFromRecord: false,
+    recordEntrance: false,
     openedAfterEdit: false,
     returnHall: '主馆',
     returnHallId: '',
@@ -58,7 +59,8 @@ Page({
       textGalleryHeight: Math.max(
         420,
         windowInfo.windowHeight - statusBarHeight - Math.max(40, navigationBarHeight)
-      )
+      ),
+      recordEntrance: options.from === 'record'
     })
 
     if (options.token) {
@@ -149,8 +151,11 @@ Page({
       return
     }
     if (this.data.openedFromRecord) {
+      const hallId = this.data.returnHallId
+        ? `&hallId=${encodeURIComponent(this.data.returnHallId)}`
+        : ''
       wx.redirectTo({
-        url: `/pages/hall/hall?hall=${encodeURIComponent(this.data.returnHall || '主馆')}`
+        url: `/pages/hall/hall?hall=${encodeURIComponent(this.data.returnHall || '主馆')}${hallId}&fromRecord=1`
       })
       return
     }
