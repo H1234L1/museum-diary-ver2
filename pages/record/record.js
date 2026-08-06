@@ -55,6 +55,12 @@ Page({
     tutorialPhotoPickerVisible: false,
     audioTitleDialogVisible: false,
     audioTitleDraft: '',
+    saving: false,
+    admissionAnimating: false,
+    admissionLeaving: false,
+    admissionStampVisible: false,
+    admissionLabel: '',
+    admissionTarget: 'photo',
     toast: ''
   },
 
@@ -196,6 +202,9 @@ Page({
 
   onUnload() {
     if (this.tutorialWritingTimer) clearTimeout(this.tutorialWritingTimer)
+    if (this.admissionStampTimer) clearTimeout(this.admissionStampTimer)
+    if (this.admissionExitTimer) clearTimeout(this.admissionExitTimer)
+    if (this.admissionNavigateTimer) clearTimeout(this.admissionNavigateTimer)
     if (this.data.recording && recorderManager) recorderManager.stop()
     if (!recorderManager) return
 
@@ -614,6 +623,7 @@ Page({
   },
 
   async save() {
+    if (this.data.saving) return
     if (this.data.recording) {
       this.notice('请先轻触结束录音')
       return
@@ -647,15 +657,18 @@ Page({
     }
     if (this.data.hallId) record.hallId = this.data.hallId
 
+    this.setData({ saving: true })
     try {
       const user = await getUser()
       if (!user) {
+        this.setData({ saving: false })
         wx.reLaunch({ url: '/pages/onboarding/onboarding' })
         return
       }
       if (this.data.isEditing) await updateItem(record.id, record)
       else await addItem(record)
     } catch (error) {
+      this.setData({ saving: false })
       this.notice('保存失败，请稍后再试')
       return
     }
@@ -663,19 +676,33 @@ Page({
     if (!this.data.isEditing) await this.completeGuideStep('save-first-exhibit')
 
     const destinationHall = record.hall || '主馆'
-    wx.showToast({
-      title: this.data.isEditing ? '展品已更新' : `已收藏到${destinationHall}`,
-      icon: 'success'
+    this.setData({
+      admissionAnimating: true,
+      admissionLeaving: false,
+      admissionStampVisible: false,
+      admissionLabel: this.data.isEditing ? '展品已更新' : `已入藏 · ${destinationHall}`,
+      admissionTarget: this.data.image ? 'photo' : (this.data.audio ? 'audio' : 'text')
     })
-    setTimeout(() => {
-      const hallId = record.hallId ? `&hallId=${encodeURIComponent(record.hallId)}` : ''
-      const url = `/pages/detail/detail?type=${type}&id=${record.id}&hall=${encodeURIComponent(destinationHall)}${hallId}`
+    this.admissionStampTimer = setTimeout(() => {
+      this.setData({ admissionStampVisible: true })
+    }, 520)
+    this.admissionExitTimer = setTimeout(() => {
+      this.setData({ admissionLeaving: true })
+    }, 980)
+    const hallId = record.hallId ? `&hallId=${encodeURIComponent(record.hallId)}` : ''
+    const url = `/pages/detail/detail?type=${type}&id=${record.id}&hall=${encodeURIComponent(destinationHall)}${hallId}`
+    this.admissionNavigateTimer = setTimeout(() => {
       if (this.data.isEditing) {
         wx.reLaunch({ url: `${url}&afterEdit=1` })
       } else {
-        wx.redirectTo({ url: `${url}&from=record` })
+        wx.navigateTo({
+          url: `${url}&from=record`,
+          animationType: 'slide-in-right',
+          animationDuration: 360,
+          fail: () => wx.redirectTo({ url: `${url}&from=record` })
+        })
       }
-    }, 700)
+    }, this.data.isEditing ? 1300 : 1020)
   },
 
   notice(toast) {

@@ -10,7 +10,7 @@
     <view class="page-title">记录</view>
   </view>
 
-  <view class="museum-frame" bindtap="chooseImage">
+  <view class="museum-frame {{admissionAnimating && admissionTarget === 'photo' ? 'admission-target is-admitting' : ''}} {{admissionLeaving && admissionTarget === 'photo' ? 'is-leaving' : ''}}" bindtap="chooseImage">
     <view class="frame-outer">
       <view class="frame-carving"></view>
       <view class="frame-middle">
@@ -28,9 +28,14 @@
         </view>
       </view>
     </view>
+    <view wx:if="{{admissionAnimating && admissionTarget === 'photo'}}" class="admission-glass" catchtap="stopPropagation">
+      <view class="admission-light"></view>
+      <view class="admission-case-edge"></view>
+      <view class="admission-stamp {{admissionStampVisible ? 'is-visible' : ''}}">{{admissionLabel}}</view>
+    </view>
   </view>
 
-  <view class="composer {{voiceMode ? 'voice-mode' : ''}}">
+  <view class="composer {{voiceMode ? 'voice-mode' : ''}} {{admissionAnimating && admissionTarget !== 'photo' ? 'admission-target is-admitting admission-' + admissionTarget : ''}} {{admissionLeaving && admissionTarget !== 'photo' ? 'is-leaving' : ''}}">
     <view class="mode-toggle" bindtap="toggleVoiceMode">
       <view wx:if="{{!voiceMode}}" class="speech-icon">
         <view class="sound-dot"></view>
@@ -64,6 +69,11 @@
       class="hold-to-talk {{recording ? 'is-recording' : ''}}"
       bindtap="handleVoiceTap"
     >{{voiceButtonText}}</view>
+    <view wx:if="{{admissionAnimating && admissionTarget !== 'photo'}}" class="admission-glass compact" catchtap="stopPropagation">
+      <view class="admission-light"></view>
+      <view class="admission-case-edge"></view>
+      <view class="admission-stamp {{admissionStampVisible ? 'is-visible' : ''}}">{{admissionLabel}}</view>
+    </view>
   </view>
 
   <view class="hall-destination">
@@ -186,4 +196,6 @@
       </view>
     </view>
   </view>
+
+  <view wx:if="{{admissionAnimating}}" class="admission-room-wash" catchtap="stopPropagation"></view>
 </view>

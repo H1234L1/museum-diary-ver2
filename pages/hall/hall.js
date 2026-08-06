@@ -106,6 +106,7 @@ Page({
   },
 
   onLoad(options = {}) {
+    this.returnDirectlyToGallery = options.fromRecord === '1'
     let hallName = '主馆'
     if (options.hall) {
       try {
@@ -175,6 +176,10 @@ Page({
   },
 
   goBack() {
+    if (this.returnDirectlyToGallery) {
+      wx.redirectTo({ url: '/pages/gallery/gallery' })
+      return
+    }
     wx.navigateBack({
       fail: () => wx.redirectTo({ url: '/pages/gallery/gallery' })
     })
