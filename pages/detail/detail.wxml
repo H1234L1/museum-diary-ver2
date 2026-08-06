@@ -12,7 +12,7 @@
       <view class="showcase-menu-trigger" bindtap="toggleActionsMenu">•••</view>
       <view wx:if="{{actionsMenuVisible}}" class="showcase-menu">
         <view class="showcase-menu-item" bindtap="editItem"><text class="menu-edit-icon">✎</text>编辑</view>
-        <button class="showcase-menu-item" open-type="share" bindtap="closeActionsMenu"><text class="menu-share-icon">↗</text>分享</button>
+        <button class="showcase-menu-item" open-type="share" bindtap="closeActionsMenu"><view class="menu-share-icon"><view class="menu-share-line"></view><view class="menu-share-tip"></view></view>分享</button>
       </view>
     </view>
 
@@ -38,7 +38,7 @@
           <view wx:if="{{record && record.date}}" class="exhibit-date">{{displayDate}} 入藏</view>
           <view wx:if="{{record && record.story}}" class="photo-story-preview">{{record.story}}</view>
           <view wx:if="{{photoStoryExpandable}}" class="photo-story-expand" bindtap="openPhotoStory">… 展开</view>
-          <view class="hall-link">所属展厅 <text>{{record && record.hall ? record.hall : '主馆'}}　›</text></view>
+          <view class="hall-link" bindtap="goRecordHall">所属展厅 <text>{{record && record.hall ? record.hall : '主馆'}}　›</text></view>
         </view>
       </view>
     </view>
@@ -95,7 +95,7 @@
         <view class="audio-control" bindtap="toggleAudio">
           <view class="audio-control-icon">{{playing ? 'Ⅱ' : '▶'}}</view>
         </view>
-        <view class="hall-link">所属展厅 <text>{{record ? record.hall : '主馆'}}　›</text></view>
+        <view class="hall-link" bindtap="goRecordHall">所属展厅 <text>{{record ? record.hall : '主馆'}}　›</text></view>
         </view>
       </view>
     </view>
@@ -105,6 +105,10 @@
     <view class="floating-comment-icon"></view>
     <text>留言</text>
   </view>
+  <button wx:if="{{!isSharedViewer}}" class="return-main-hall" bindtap="goMainHall">
+    <text class="return-main-hall-arrow">‹</text>
+    <text>回到主馆</text>
+  </button>
   <view wx:if="{{photoStoryVisible}}" class="photo-story-mask" bindtap="closePhotoStory"></view>
   <view wx:if="{{photoStoryVisible}}" class="photo-story-reader" catchtap="noop">
     <view class="photo-story-reader-topline"></view>

@@ -120,6 +120,16 @@ Page({
       })
     })
   },
+  goMainHall() {
+    wx.redirectTo({ url: '/pages/showcase/showcase?hall=%E4%B8%BB%E9%A6%86' })
+  },
+  goRecordHall() {
+    const hall = encodeURIComponent(this.data.returnHall || '主馆')
+    const hallId = this.data.returnHallId
+      ? `&hallId=${encodeURIComponent(this.data.returnHallId)}`
+      : ''
+    wx.redirectTo({ url: `/pages/showcase/showcase?hall=${hall}${hallId}` })
+  },
   handleTutorialAction(e) {
     if (e.detail.stepId === 'back-from-detail') this.goBack()
   },
