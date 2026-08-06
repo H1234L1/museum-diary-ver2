@@ -1,81 +1,232 @@
 <view class="report-page" bindtap="handleTutorialPreviewTap">
   <view class="report-nav">
-    <view class="back" bindtap="goBack">‹</view>
+    <view class="nav-button back-button" catchtap="goBack" aria-label="返回">
+      <view class="back-chevron"></view>
+    </view>
+    <view class="report-nav-title">月度馆藏</view>
+    <button class="nav-button share-button" open-type="share" catchtap="stopPropagation" aria-label="分享月报">
+      <view class="share-arrow"></view>
+      <view class="share-tray"></view>
+    </button>
   </view>
 
-  <view class="report-sheet">
-    <view class="corner corner-left"></view>
-    <view class="corner corner-right"></view>
+  <view
+    class="report-poster theme-{{overlayTheme}} font-{{fontTheme}} layout-{{layoutTheme}}"
+    catchtap="openPhotoPicker"
+    aria-label="轻触更换月报背景照片"
+  >
+    <image class="poster-background" src="{{backgroundImage}}" mode="aspectFill"></image>
+    <view class="poster-blur"></view>
+    <view class="poster-overlay"></view>
+    <view class="poster-vignette"></view>
+    <view class="poster-grain"></view>
 
-    <view class="report-meta">
-      <text>LIFE MUSEUM</text>
-      <text>{{monthText}}</text>
+    <view class="poster-topline">
+      <view class="poster-brand"><text class="brand-ring">◎</text> LIFE MUSEUM</view>
+      <view class="poster-year">{{reportYear}}</view>
+      <view class="poster-edition">MONTHLY ARCHIVE</view>
     </view>
 
-    <view class="museum-emblem">
-      <view class="emblem-roof"></view>
-      <view class="emblem-columns"><text></text><text></text><text></text></view>
-      <view class="emblem-base"></view>
-    </view>
+    <block wx:if="{{layoutTheme === 'calendar'}}">
+    <view class="calendar-composition">
+      <view class="month-script">{{monthEnglish}}</view>
+      <view class="month-rule"></view>
 
-    <view class="report-scene" aria-hidden="true">
-      <image src="/assets/art/home-hero.jpg" mode="aspectFill"></image>
-      <view class="scene-wash"></view>
-    </view>
+      <view class="calendar-weekdays">
+        <view wx:for="{{weekdays}}" wx:key="*this" class="weekday">{{item}}</view>
+      </view>
 
-    <view class="report-hero">
-      <view class="report-title">我在 {{monthName}} 收藏了</view>
-      <view class="report-number"><text>{{monthlyItemCount}}</text><view>件展品</view></view>
-      <view class="hero-ornament"><text></text><view class="ornament-diamond">◆</view><text></text></view>
-      <view class="report-slogan">每一个瞬间，都是生命的展品。</view>
-    </view>
-
-    <view class="overview-heading">
-      <text></text><view>{{monthName}}· 馆藏概览</view><text></text>
-    </view>
-
-    <view class="report-stats">
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">✎</text>当月入馆字数</view>
-        <view class="stat-value">{{monthlyWordCount}}<text>字</text></view>
-      </view>
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">◷</text>累计入馆时间</view>
-        <view class="stat-value">{{monthlyActiveMinutes}}<text>分钟</text></view>
-      </view>
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">▧</text>当月入馆图片</view>
-        <view class="stat-value">{{monthlyImageCount}}<text>张</text></view>
-      </view>
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">▦</text>当月入馆天数</view>
-        <view class="stat-value">{{monthlyVisitDays}}<text>天</text></view>
-      </view>
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">馆</text>最爱的展厅</view>
-        <view class="stat-value stat-hall">{{favoriteHall}}</view>
-      </view>
-      <view class="stat-cell">
-        <view class="stat-label"><text class="stat-icon">☾</text>最晚离馆时间</view>
-        <view class="stat-value">{{latestExitTime}}</view>
+      <view class="calendar-grid">
+        <view
+          wx:for="{{calendarDays}}"
+          wx:key="key"
+          class="calendar-day {{item.empty ? 'empty' : ''}} {{item.recorded ? 'recorded' : ''}} {{item.today ? 'today' : ''}}"
+        >
+          <text wx:if="{{!item.empty}}">{{item.day}}</text>
+        </view>
       </view>
     </view>
 
-    <view wx:if="{{monthlyAudioMinutes > 0}}" class="voice-footnote">
-      本月还收藏了 {{monthlyAudioMinutes}} 分钟声音
+    <view class="monthly-story tone-{{dataPanelTone}}" style="background-color: {{dataPanelColor}};">
+      <view class="story-kicker">{{monthName}} · 人生馆藏</view>
+      <view class="story-total">
+        <text>收藏了</text>
+        <text class="story-number">{{monthlyItemCount}}</text>
+        <text>件展品</text>
+      </view>
+      <view class="story-rule"><text></text><view>◆</view><text></text></view>
+
+      <view class="report-stats">
+        <view class="stat-cell">
+          <view class="stat-label">入馆字数</view>
+          <view class="stat-value">{{monthlyWordCount}}<text>字</text></view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-label">累计时光</view>
+          <view class="stat-value">{{monthlyActiveMinutes}}<text>分钟</text></view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-label">照片馆藏</view>
+          <view class="stat-value">{{monthlyImageCount}}<text>张</text></view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-label">入馆日</view>
+          <view class="stat-value">{{monthlyVisitDays}}<text>天</text></view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-label">常驻展厅</view>
+          <view class="stat-value stat-hall">{{favoriteHall}}</view>
+        </view>
+        <view class="stat-cell">
+          <view class="stat-label">最晚离馆</view>
+          <view class="stat-value">{{latestExitTime}}</view>
+        </view>
+      </view>
+
+      <view wx:if="{{monthlyAudioMinutes > 0}}" class="voice-footnote">
+        本月还收藏了 {{monthlyAudioMinutes}} 分钟声音
+      </view>
     </view>
 
-    <view class="report-footer">
-      <view class="brand-cn">人生博物馆</view>
-      <view class="brand-en">Life Museum</view>
-      <view class="footer-leaves"><text></text><text></text><text></text></view>
+    </block>
+
+    <view wx:else class="postcard-composition">
+      <view class="postcard-caption">MONTHLY POSTCARD · {{reportYear}}</view>
+      <view class="postcard-body">
+        <view class="postcard-stamp">
+          <view class="stamp-edge"></view>
+          <image src="{{backgroundImage}}" mode="aspectFill"></image>
+          <view class="stamp-ticket">
+            <view class="stamp-month">{{monthEnglish}}</view>
+            <view class="stamp-date">{{monthText}}</view>
+            <view class="stamp-year">{{reportYear}}</view>
+          </view>
+        </view>
+
+        <view class="postcard-data">
+          <view class="postcard-total"><text>{{monthlyItemCount}}</text><view>件展品</view></view>
+          <view class="postcard-data-rule"></view>
+          <view class="postcard-stat"><text>入馆字数</text><view>{{monthlyWordCount}} 字</view></view>
+          <view class="postcard-stat"><text>累计时光</text><view>{{monthlyActiveMinutes}} 分钟</view></view>
+          <view class="postcard-stat"><text>照片馆藏</text><view>{{monthlyImageCount}} 张</view></view>
+          <view class="postcard-stat"><text>入馆日</text><view>{{monthlyVisitDays}} 天</view></view>
+          <view class="postcard-stat"><text>常驻展厅</text><view>{{favoriteHall}}</view></view>
+          <view class="postcard-stat"><text>最晚离馆</text><view>{{latestExitTime}}</view></view>
+          <view wx:if="{{monthlyAudioMinutes > 0}}" class="postcard-voice">声音 {{monthlyAudioMinutes}} 分钟</view>
+        </view>
+      </view>
+      <view class="postcard-mark">LIFE MUSEUM · PRIVATE ARCHIVE</view>
     </view>
+
+    <view class="poster-footer">
+      <view>人生博物馆</view>
+      <text>Every moment deserves a place.</text>
+      <view>{{monthText}}</view>
+    </view>
+
+    <view class="change-photo-hint">轻触画面 · 更换照片</view>
   </view>
 
-  <button class="share-action" open-type="share" aria-label="分享月报">
-    <view class="share-symbol">
-      <view class="share-arrow">↗</view>
-      <view class="share-box"></view>
+  <view class="design-trigger" catchtap="openDesigner" aria-label="编辑月报样式">
+    <view class="sliders-icon"><text></text><text></text><text></text></view>
+    <view>样式</view>
+  </view>
+
+  <view wx:if="{{designerVisible}}" class="designer-mask" catchtap="closeDesigner">
+    <view class="designer-sheet" catchtap="stopPropagation">
+      <view class="sheet-handle"></view>
+      <view class="designer-heading">
+        <view>
+          <view class="designer-kicker">MONTHLY ART DIRECTION</view>
+          <view class="designer-title">装饰你的月报</view>
+        </view>
+        <view class="designer-done" catchtap="closeDesigner">完成</view>
+      </view>
+
+      <view class="designer-tabs">
+        <view class="designer-tab {{designerTab === 'layout' ? 'active' : ''}}" data-tab="layout" catchtap="selectDesignerTab">布局</view>
+        <view class="designer-tab {{designerTab === 'photo' ? 'active' : ''}}" data-tab="photo" catchtap="selectDesignerTab">照片</view>
+        <view class="designer-tab {{designerTab === 'color' ? 'active' : ''}}" data-tab="color" catchtap="selectDesignerTab">色彩</view>
+        <view class="designer-tab {{designerTab === 'font' ? 'active' : ''}}" data-tab="font" catchtap="selectDesignerTab">字体</view>
+      </view>
+
+      <view wx:if="{{designerTab === 'layout'}}" class="designer-content layout-content">
+        <view class="content-note">选择这个月故事的陈列方式</view>
+        <view class="layout-options">
+          <view
+            wx:for="{{layoutOptions}}"
+            wx:key="id"
+            class="layout-option {{layoutTheme === item.id ? 'selected' : ''}}"
+            data-layout="{{item.id}}"
+            catchtap="selectLayoutTheme"
+          >
+            <view class="layout-mini mini-{{item.id}}">
+              <view class="mini-photo"></view>
+              <view class="mini-calendar"><text></text><text></text><text></text><text></text><text></text><text></text></view>
+              <view class="mini-data"><text></text><text></text><text></text></view>
+            </view>
+            <view class="layout-option-name">{{item.name}}</view>
+            <view class="layout-option-note">{{item.note}}</view>
+            <view wx:if="{{layoutTheme === item.id}}" class="layout-check">✓</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:elif="{{designerTab === 'photo'}}" class="designer-content photo-content">
+        <view class="content-note">从已经收藏的照片中选择月报背景</view>
+        <scroll-view wx:if="{{photoOptions.length}}" class="photo-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+          <view class="photo-options">
+            <view
+              wx:for="{{photoOptions}}"
+              wx:key="image"
+              class="photo-option {{backgroundImage === item.image ? 'selected' : ''}}"
+              data-image="{{item.image}}"
+              catchtap="selectBackground"
+            >
+              <image src="{{item.image}}" mode="aspectFill"></image>
+              <view class="photo-option-shade"></view>
+              <view wx:if="{{backgroundImage === item.image}}" class="option-check">✓</view>
+              <view class="photo-option-title">{{item.title}}</view>
+            </view>
+          </view>
+        </scroll-view>
+        <view wx:else class="empty-photo-library">还没有照片馆藏，先去收藏一张照片吧。</view>
+      </view>
+
+      <view wx:elif="{{designerTab === 'color'}}" class="designer-content color-content">
+        <view class="content-note">选择覆盖在照片上的主题色与氛围</view>
+        <view class="theme-options">
+          <view
+            wx:for="{{themeOptions}}"
+            wx:key="id"
+            class="theme-option {{overlayTheme === item.id ? 'selected' : ''}}"
+            data-theme="{{item.id}}"
+            catchtap="selectOverlayTheme"
+          >
+            <view class="theme-swatch" style="background-color: {{item.color}};"><text wx:if="{{overlayTheme === item.id}}">✓</text></view>
+            <view>{{item.name}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:elif="{{designerTab === 'font'}}" class="designer-content font-content">
+        <view class="content-note">字体只改变月报气质，不影响你的馆藏内容</view>
+        <view
+          wx:for="{{fontOptions}}"
+          wx:key="id"
+          class="font-option font-{{item.id}} {{fontTheme === item.id ? 'selected' : ''}}"
+          data-font="{{item.id}}"
+          catchtap="selectFontTheme"
+        >
+          <view>
+            <text>{{item.name}}</text>
+            <view>{{item.sample}}</view>
+          </view>
+          <view class="font-check">{{fontTheme === item.id ? '✓' : ''}}</view>
+        </view>
+      </view>
+
+      <view wx:if="{{savingDesign}}" class="saving-note">正在保存样式…</view>
     </view>
-  </button>
+  </view>
 </view>
